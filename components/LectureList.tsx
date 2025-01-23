@@ -445,7 +445,7 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
 
       {filteredLiveClasses.length > 0 && (
         <div>
-          <div className="bg-gray-800 rounded-lg overflow-hidden shadow-[0_0_15px_-3px_rgba(59,130,246,0.4)] relative">
+          <div className="bg-gray-800 rounded-lg overflow-hidden shadow-[0_0_15px_-3px_rgba(242,169,0,0.7)] relative">
             {renderTableHeader(true)}
             {filteredLiveClasses.map((c, i) => 
               renderClassRow(c, 'live', i === filteredLiveClasses.length - 1)
