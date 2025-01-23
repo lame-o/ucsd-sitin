@@ -43,6 +43,18 @@ interface LectureListProps {
 }
 
 export default function LectureList({ classes, mode = 'live', onReady }: LectureListProps) {
+  // Remove duplicate classes at the start
+  const uniqueClasses = useMemo(() => {
+    const seen = new Set<string>();
+    return classes.filter(c => {
+      // Create a unique key combining all relevant fields
+      const key = `${c.courseCode}-${c.professor}-${c.building}-${c.room}-${c.time}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }, [classes]);
+
   const [currentTime, setCurrentTime] = useState(formatPSTTime());
   const [sortedClasses, setSortedClasses] = useState<ClassItem[]>([]);
   const [isSorting, setIsSorting] = useState(false);
@@ -158,7 +170,7 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
     };
 
     // Get all subjects from classes
-    classes.forEach(c => {
+    uniqueClasses.forEach(c => {
       const match = c.courseCode.match(/^([A-Z]+)/);
       if (match) subjectSet.add(match[0]);
     });
@@ -184,7 +196,7 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
       groupedSubjects: grouped,
       subjectDescriptions: descriptions
     };
-  }, [classes]);
+  }, [uniqueClasses]);
 
   // Update time every minute
   useEffect(() => {
@@ -202,12 +214,12 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
         setIsSorting(true);
         // Process in chunks to avoid blocking UI
         const chunkSize = 100;
-        const chunks = Math.ceil(classes.length / chunkSize);
-        const sorted = [...classes];
+        const chunks = Math.ceil(uniqueClasses.length / chunkSize);
+        const sorted = [...uniqueClasses];
         
         for (let i = 0; i < chunks; i++) {
           const start = i * chunkSize;
-          const end = Math.min(start + chunkSize, classes.length);
+          const end = Math.min(start + chunkSize, uniqueClasses.length);
           const chunk = sorted.slice(start, end);
           
           // Sort this chunk
@@ -245,7 +257,7 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
     };
 
     sortClasses();
-  }, [mode, classes, onReady]);
+  }, [mode, uniqueClasses, onReady]);
 
   // Helper function to get start time for sorting
   const getStartTime = (time: string) => {
@@ -255,7 +267,7 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
 
   // Memoize live classes filtering
   const filteredLiveClasses = useMemo(() => {
-    return classes
+    return uniqueClasses
       .filter((c) => {
         const [startTime, endTime] = c.time.split('-');
         return isClassLive(startTime, endTime, c.days);
@@ -266,10 +278,10 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
         const [, endTimeB] = b.time.split('-');
         return getRemainingMinutes(endTimeB) - getRemainingMinutes(endTimeA);
       });
-  }, [classes, selectedSubject, currentTime]);
+  }, [uniqueClasses, selectedSubject, currentTime]);
 
   const upcomingClasses = useMemo(() => {
-    return classes
+    return uniqueClasses
       .filter((c) => {
         const [startTime, endTime] = c.time.split('-');
         const startDate = parseTime(startTime);
@@ -277,7 +289,7 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
         return isClassDay(c.days) && minutesUntilStart > 0 && minutesUntilStart <= selectedTimeFrame;
       })
       .sort((a, b) => getStartTime(a.time) - getStartTime(b.time)); // Sort by start time
-  }, [classes, parseTime, selectedTimeFrame, currentTime]);
+  }, [uniqueClasses, parseTime, selectedTimeFrame, currentTime]);
 
   const getTimeUntilStart = (startTime: string) => {
     const now = new Date();
@@ -308,7 +320,7 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
   );
 
   const renderClassRow = (classItem: ClassItem, status: 'live' | 'upcoming' | 'catalog', isLast: boolean) => {
-    const dotColor = status === 'live' ? 'bg-green-500' : status === 'upcoming' ? 'bg-yellow-500' : 'bg-gray-500';
+    const dotColor = status === 'live' ? 'bg-green-500 shadow-green-500/75 shadow-[0_0_5px_3px]' : status === 'upcoming' ? 'bg-yellow-500' : 'bg-gray-500';
     const dotAnimation = status === 'live' ? 'animate-pulse' : '';
     
     // Format the time range nicely
@@ -432,7 +444,7 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
         <div className="mt-4">
           {isSorting ? (
             <div className="text-center py-8 text-gray-400">
-              Sorting {classes.length} classes...
+              Sorting {uniqueClasses.length} classes...
             </div>
           ) : (
             <div className="bg-gray-800 rounded-lg overflow-hidden">
@@ -457,22 +469,22 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
   // Get count of unique subjects in live lectures
   const liveSubjectsCount = useMemo(() => {
     const subjectSet = new Set<string>();
-    classes.forEach(c => {
+    uniqueClasses.forEach(c => {
       const match = c.courseCode.match(/^([A-Z]+)/);
       if (match) subjectSet.add(match[0]);
     });
     return subjectSet.size;
-  }, [classes]);
+  }, [uniqueClasses]);
 
   // Get count of unique subjects in upcoming lectures
   const upcomingSubjectsCount = useMemo(() => {
     const subjectSet = new Set<string>();
-    classes.forEach(c => {
+    uniqueClasses.forEach(c => {
       const match = c.courseCode.match(/^([A-Z]+)/);
       if (match) subjectSet.add(match[0]);
     });
     return subjectSet.size;
-  }, [classes]);
+  }, [uniqueClasses]);
 
   // Filter upcoming classes by subject
   const filteredUpcomingClasses = useMemo(() => {
@@ -553,7 +565,7 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
 
       {filteredLiveClasses.length > 0 && (
         <div>
-          <div className="bg-gray-800 rounded-lg overflow-hidden shadow-[0_0_15px_-3px_rgba(242,169,0,0.7)] relative">
+          <div className="bg-gray-800 rounded-lg overflow-hidden shadow-[0_0_15px_-3px_rgba(19,140,73,0.7)] relative">
             {renderTableHeader(true)}
             {filteredLiveClasses.map((c, i) => 
               renderClassRow(c, 'live', i === filteredLiveClasses.length - 1)
