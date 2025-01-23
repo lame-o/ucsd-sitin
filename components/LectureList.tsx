@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, Fragment, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { 
   isClassLive, 
   isClassUpcoming, 
@@ -19,8 +19,6 @@ import {
   ArrowsUpDownIcon
 } from '@heroicons/react/24/outline';
 import { BoltIcon } from '@heroicons/react/24/solid';
-import { Combobox, Transition } from '@headlessui/react';
-import { ChevronUpDownIcon, CheckIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 
 interface ClassItem {
@@ -48,8 +46,7 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
   const [sortedClasses, setSortedClasses] = useState<ClassItem[]>([]);
   const [isSorting, setIsSorting] = useState(false);
   const [selectedSubject, setSelectedSubject] = useState<string>('');
-  const [inputValue, setInputValue] = useState('');
-  const [query, setQuery] = useState('');
+  const [selectedUpcomingSubject, setSelectedUpcomingSubject] = useState<string>('');
   const [sortByRecent, setSortByRecent] = useState(false);
   const [, forceUpdate] = useState({});
 
@@ -252,6 +249,13 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
     );
   }
 
+  // Get minutes elapsed since class started
+  const getMinutesElapsed = useCallback((startTime: string) => {
+    const now = new Date();
+    const startDate = parseTime(startTime);
+    return Math.floor((now.getTime() - startDate.getTime()) / 60000);
+  }, []);
+
   // Extract subjects once and memoize
   const subjects = useMemo(() => {
     const subjectSet = new Set<string>();
@@ -262,34 +266,126 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
     return Array.from(subjectSet).sort();
   }, [classes]);
 
-  // Simple string matching for filtering subjects
-  const filteredSubjects = useMemo(() => {
-    if (!inputValue.trim()) return subjects;
-    const searchValue = inputValue.toLowerCase();
-    return subjects.filter(subject => 
-      subject.toLowerCase().startsWith(searchValue)
-    );
-  }, [subjects, inputValue]);
+  // Subject descriptions mapping
+  const subjectDescriptions: { [key: string]: string } = {
+    'AAS': 'African American Studies',
+    'ANBI': 'Anthro/Biological Anthropology',
+    'ANAR': 'Anthropological Archaeology',
+    'ANTH': 'Anthropology',
+    'ANSC': 'Anthropology/Sociocultural',
+    'ASTR': 'Astronomy and Astrophysics',
+    'BENG': 'Bioengineering',
+    'BIEB': 'Biol/Ecology, Behavior, & Evol',
+    'BICD': 'Biol/Genetics,Cellular&Develop',
+    'BIPN': 'Biology/Animal Physiol&Neurosc',
+    'BIBC': 'Biology/Biochemistry',
+    'BILD': 'Biology/Lower Division',
+    'BIMM': 'Biology/Molec Biol, Microbiol',
+    'CENG': 'Chemical Engineering',
+    'CHEM': 'Chemistry and Biochemistry',
+    'CHIN': 'Chinese Studies',
+    'CCS': 'Climate Change Studies',
+    'COGS': 'Cognitive Science',
+    'COMM': 'Communication',
+    'CSS': 'Computational Social Science',
+    'CSE': 'Computer Science & Engineering',
+    'CGS': 'Critical Gender Studies',
+    'CAT': 'Culture, Art, & Technology',
+    'DSC': 'Data Science',
+    'DSGN': 'Design',
+    'DOC': 'Dimensions of Culture',
+    'ECON': 'Economics',
+    'EDS': 'Education Studies',
+    'ECE': 'Electrical & Computer Engineer',
+    'ENG': 'Engineering',
+    'ENVR': 'Environmental Studies',
+    'ESYS': 'Environmental Systems',
+    'ETHN': 'Ethnic Studies',
+    'GLBH': 'Global Health',
+    'GSS': 'Global South Studies',
+    'HITO': 'History Topics',
+    'HIAF': 'History of Africa',
+    'HIEA': 'History of East Asia',
+    'HIEU': 'History of Europe',
+    'HILA': 'History of Latin America',
+    'HISC': 'History of Science',
+    'HISA': 'History of South Asia',
+    'HINE': 'History of the Near East',
+    'HIUS': 'History of the United States',
+    'HILD': 'History, Lower Division',
+    'HDS': 'Human Developmental Sciences',
+    'HUM': 'Humanities',
+    'INTL': 'International Studies',
+    'JAPN': 'Japanese Studies',
+    'JWSP': 'Jewish Studies Program',
+    'LATI': 'Latin American Studies',
+    'LAWS': 'Law and Society',
+    'LIAB': 'Linguistics/Arabic',
+    'LIGN': 'Linguistics/General',
+    'LIHL': 'Linguistics/Heritage Languages',
+    'LISP': 'Linguistics/Spanish',
+    'LTAM': 'Literature of the Americas',
+    'LTCS': 'Literature/Cultural Studies',
+    'LTEU': 'Literature/European & Eurasian',
+    'LTFR': 'Literature/French',
+    'LTGM': 'Literature/German',
+    'LTGK': 'Literature/Greek',
+    'LTIT': 'Literature/Italian',
+    'LTKO': 'Literature/Korean',
+    'LTLA': 'Literature/Latin',
+    'LTRU': 'Literature/Russian',
+    'LTSP': 'Literature/Spanish',
+    'LTWR': 'Literature/Writing',
+    'LTEN': 'Literatures in English',
+    'LTWL': 'Literatures of the World',
+    'LTEA': 'Literatures/East Asian',
+    'MMW': 'Making of the Modern World',
+    'MATH': 'Mathematics',
+    'MAE': 'Mechanical & Aerospace Engin',
+    'MUS': 'Music',
+    'MGT': 'Rady School of Management',
+    'NANO': 'NanoEngineering',
+    'PHIL': 'Philosophy',
+    'PHYS': 'Physics',
+    'POLI': 'Political Science',
+    'PSYC': 'Psychology',
+    'PH': 'Public Health',
+    'RELI': 'Religion, Study of',
+    'SIO': 'Scripps Inst of Oceanography',
+    'SOCI': 'Sociology',
+    'SE': 'Structural Engineering',
+    'SYN': 'Synthesis',
+    'TDAC': 'Theatre / Acting',
+    'TDDE': 'Theatre / Design',
+    'TDDR': 'Theatre / Directing&Stage Mgmt',
+    'TDGE': 'Theatre / General',
+    'TDHD': 'Dance/History',
+    'TDTR': 'Dance/Theory',
+    'TDHT': 'Theatre / History & Theory',
+    'TMC': 'Thurgood Marshall College',
+    'USP': 'Urban Studies & Planning',
+    'VIS': 'Visual Arts',
+    'WCWP': 'Warren College Writing Program'
+  };
 
-  // Debounced query update
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setQuery(inputValue);
-    }, 100);
-    return () => clearTimeout(timer);
-  }, [inputValue]);
-
-  // Handle input change immediately for responsiveness
-  const handleInputChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    setInputValue(event.target.value);
-  }, []);
-
-  // Get minutes elapsed since class started
-  const getMinutesElapsed = useCallback((startTime: string) => {
-    const now = new Date();
-    const startDate = parseTime(startTime);
-    return Math.floor((now.getTime() - startDate.getTime()) / 60000);
-  }, []);
+  // Group subjects by first letter and add dividers
+  const groupedSubjects = useMemo(() => {
+    const result: (string | null)[] = [''];  // Start with empty option
+    let currentLetter = '';
+    
+    subjects.forEach((subject) => {
+      const firstLetter = subject[0];
+      if (firstLetter !== currentLetter) {
+        if (currentLetter !== '') {
+          result.push(null); // Add divider
+        }
+        currentLetter = firstLetter;
+      }
+      result.push(subject);
+    });
+    
+    return result;
+  }, [subjects]);
 
   // Memoize live classes filtering
   const filteredLiveClasses = useMemo(() => {
@@ -300,10 +396,12 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
     // Sort based on toggle
     filtered = [...filtered].sort((a, b) => {
       if (sortByRecent) {
-        // Sort by most recently started (least minutes elapsed)
+        // Sort by start time
         const [startTimeA] = a.time.split('-');
         const [startTimeB] = b.time.split('-');
-        return getMinutesElapsed(startTimeA) - getMinutesElapsed(startTimeB);
+        const timeA = parseTime(startTimeA).getTime();
+        const timeB = parseTime(startTimeB).getTime();
+        return timeB - timeA; // Most recent first
       } else {
         // Sort by most time remaining (original sort)
         const [, endTimeA] = a.time.split('-');
@@ -313,17 +411,34 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
     });
 
     return filtered;
-  }, [liveClasses, selectedSubject, sortByRecent, getMinutesElapsed]);
+  }, [liveClasses, selectedSubject, sortByRecent, parseTime, getRemainingMinutes]);
 
-  // Memoize handlers
-  const handleQueryChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    setQuery(event.target.value);
-  }, []);
+  // Get count of unique subjects in live lectures
+  const liveSubjectsCount = useMemo(() => {
+    const subjectSet = new Set<string>();
+    liveClasses.forEach(c => {
+      const match = c.courseCode.match(/^([A-Z]+)/);
+      if (match) subjectSet.add(match[0]);
+    });
+    return subjectSet.size;
+  }, [liveClasses]);
 
-  const handleSubjectChange = useCallback((value: string) => {
-    setSelectedSubject(value);
-    setInputValue('');
-  }, []);
+  // Get count of unique subjects in upcoming lectures
+  const upcomingSubjectsCount = useMemo(() => {
+    const subjectSet = new Set<string>();
+    upcomingClasses.forEach(c => {
+      const match = c.courseCode.match(/^([A-Z]+)/);
+      if (match) subjectSet.add(match[0]);
+    });
+    return subjectSet.size;
+  }, [upcomingClasses]);
+
+  // Filter upcoming classes by subject
+  const filteredUpcomingClasses = useMemo(() => {
+    return selectedUpcomingSubject
+      ? upcomingClasses.filter(c => c.courseCode.startsWith(selectedUpcomingSubject))
+      : upcomingClasses;
+  }, [upcomingClasses, selectedUpcomingSubject]);
 
   return (
     <div className="space-y-8">
@@ -341,89 +456,32 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
           </h1>
           <div className="flex items-center justify-between gap-4 mt-2">
             <div className="flex items-center gap-4">
-              <div className="w-72">
-                <Combobox value={selectedSubject} onChange={handleSubjectChange}>
-                  <div className="relative">
-                    <div className="relative w-full cursor-default overflow-hidden rounded-lg bg-gray-700 text-left border border-gray-600 focus-within:ring-2 focus-within:ring-blue-500">
-                      <Combobox.Input
-                        className="w-full border-none py-2 pl-3 pr-10 text-sm leading-5 text-gray-200 bg-transparent focus:outline-none"
-                        displayValue={(subject: string) => subject || 'All Subjects'}
-                        onChange={handleInputChange}
-                        value={inputValue}
-                        placeholder="Search subjects..."
-                      />
-                      <Combobox.Button className="absolute inset-y-0 right-0 flex items-center pr-2">
-                        <ChevronUpDownIcon
-                          className="h-5 w-5 text-gray-400"
-                          aria-hidden="true"
-                        />
-                      </Combobox.Button>
-                    </div>
-                    <Transition
-                      as={Fragment}
-                      leave="transition ease-in duration-100"
-                      leaveFrom="opacity-100"
-                      leaveTo="opacity-0"
-                      afterLeave={() => setInputValue('')}
-                    >
-                      <Combobox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-gray-700 py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm z-10">
-                        <Combobox.Option
-                          value=""
-                          className={({ active }) =>
-                            `relative cursor-default select-none py-2 pl-10 pr-4 ${
-                              active ? 'bg-blue-500 text-white' : 'text-gray-200'
-                            }`
-                          }
-                        >
-                          {({ selected, active }) => (
-                            <>
-                              <span className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}>
-                                All Subjects
-                              </span>
-                              {selected ? (
-                                <span
-                                  className={`absolute inset-y-0 left-0 flex items-center pl-3 ${
-                                    active ? 'text-white' : 'text-blue-500'
-                                  }`}
-                                >
-                                  <CheckIcon className="h-5 w-5" aria-hidden="true" />
-                                </span>
-                              ) : null}
-                            </>
-                          )}
-                        </Combobox.Option>
-                        {filteredSubjects.map((subject) => (
-                          <Combobox.Option
-                            key={subject}
-                            value={subject}
-                            className={({ active }) =>
-                              `relative cursor-default select-none py-2 pl-10 pr-4 ${
-                                active ? 'bg-blue-500 text-white' : 'text-gray-200'
-                              }`
-                            }
-                          >
-                            {({ selected, active }) => (
-                              <>
-                                <span className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}>
-                                  {subject}
-                                </span>
-                                {selected ? (
-                                  <span
-                                    className={`absolute inset-y-0 left-0 flex items-center pl-3 ${
-                                      active ? 'text-white' : 'text-blue-500'
-                                    }`}
-                                  >
-                                    <CheckIcon className="h-5 w-5" aria-hidden="true" />
-                                  </span>
-                                ) : null}
-                              </>
-                            )}
-                          </Combobox.Option>
-                        ))}
-                      </Combobox.Options>
-                    </Transition>
-                  </div>
-                </Combobox>
+              <div className="w-96">
+                <select
+                  value={selectedSubject}
+                  onChange={(e) => setSelectedSubject(e.target.value)}
+                  className="w-full text-sm text-gray-300 hover:text-white bg-gray-700 rounded-md border border-gray-600 hover:border-gray-500 transition-colors px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">All Subjects</option>
+                  <option disabled className="border-t border-gray-600 text-gray-500">
+                    ──────────────────────────
+                  </option>
+                  {groupedSubjects.map((subject, index) => 
+                    subject === null ? (
+                      <option 
+                        key={`divider-${index}`} 
+                        disabled 
+                        className="border-t border-gray-600 text-gray-500"
+                      >
+                        ──────────────────────────
+                      </option>
+                    ) : subject === '' ? null : (
+                      <option key={subject} value={subject}>
+                        {subject}{subjectDescriptions[subject] ? ` - ${subjectDescriptions[subject]}` : ''}
+                      </option>
+                    )
+                  )}
+                </select>
               </div>
               <button
                 onClick={() => setSortByRecent(!sortByRecent)}
@@ -435,7 +493,9 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
               </button>
               <p className="text-gray-400">
                 Showing {filteredLiveClasses.length} live lectures
-                {selectedSubject && ` in ${selectedSubject}`}
+                {selectedSubject 
+                  ? ` in ${selectedSubject}` 
+                  : ` across ${liveSubjectsCount} subjects`}
               </p>
             </div>
             <div className="text-xl font-mono text-gray-300 ml-auto">Current Time: {currentTime} PST</div>
@@ -456,11 +516,50 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
 
       {upcomingClasses.length > 0 && (
         <div>
-          <h2 className="text-2xl font-bold text-gray-300 mb-4">Starting Soon</h2>
-          <div className="bg-gray-800 rounded-lg overflow-hidden opacity-75">
+          <div className="border-b border-gray-700 pb-4">
+            <h2 className="text-2xl font-bold text-gray-300">Starting Soon</h2>
+            <div className="flex items-center justify-between gap-4 mt-2">
+              <div className="flex items-center gap-4">
+                <div className="w-96">
+                  <select
+                    value={selectedUpcomingSubject}
+                    onChange={(e) => setSelectedUpcomingSubject(e.target.value)}
+                    className="w-full text-sm text-gray-300 hover:text-white bg-gray-700 rounded-md border border-gray-600 hover:border-gray-500 transition-colors px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">All Subjects</option>
+                    <option disabled className="border-t border-gray-600 text-gray-500">
+                      ──────────────────────────
+                    </option>
+                    {groupedSubjects.map((subject, index) => 
+                      subject === null ? (
+                        <option 
+                          key={`divider-${index}`} 
+                          disabled 
+                          className="border-t border-gray-600 text-gray-500"
+                        >
+                          ──────────────────────────
+                        </option>
+                      ) : subject === '' ? null : (
+                        <option key={subject} value={subject}>
+                          {subject}{subjectDescriptions[subject] ? ` - ${subjectDescriptions[subject]}` : ''}
+                        </option>
+                      )
+                    )}
+                  </select>
+                </div>
+                <p className="text-gray-400">
+                  Showing {filteredUpcomingClasses.length} upcoming lectures
+                  {selectedUpcomingSubject 
+                    ? ` in ${selectedUpcomingSubject}` 
+                    : ` across ${upcomingSubjectsCount} subjects`}
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="mt-4 bg-gray-800 rounded-lg overflow-hidden opacity-75">
             {renderTableHeader(false, true)}
-            {upcomingClasses.map((c, i) => 
-              renderClassRow(c, 'upcoming', i === upcomingClasses.length - 1)
+            {filteredUpcomingClasses.map((c, i) => 
+              renderClassRow(c, 'upcoming', i === filteredUpcomingClasses.length - 1)
             )}
           </div>
         </div>
