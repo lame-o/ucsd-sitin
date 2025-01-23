@@ -21,6 +21,7 @@ import {
 import { BoltIcon } from '@heroicons/react/24/solid';
 import { Combobox, Transition } from '@headlessui/react';
 import { ChevronUpDownIcon, CheckIcon } from '@heroicons/react/24/outline';
+import Image from 'next/image';
 
 interface ClassItem {
   id: string
@@ -330,7 +331,16 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
     <div className="space-y-8">
       <div className="flex justify-between items-center border-b border-gray-700 pb-4">
         <div>
-          <h1 className="text-4xl font-bold text-blue-400">UCSD Live Lectures</h1>
+          <h1 className="text-4xl font-bold text-blue-400 flex items-center gap-3">
+            <Image
+              src="/ucsd_logo.webp"
+              alt="UCSD"
+              width={175}
+              height={175}
+              className="rounded-sm"
+            />
+            <span className="text-4xl text-white font-bold">Live Lectures</span>
+          </h1>
           <div className="flex items-center gap-4 mt-2">
             <div className="w-72">
               <Combobox value={selectedSubject} onChange={handleSubjectChange}>

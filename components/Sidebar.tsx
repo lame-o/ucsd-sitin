@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react"
 import { gsap } from "gsap"
-import { PlayCircle, BookOpen, Info } from "lucide-react"
+import { PlayCircle, BookOpen, Info, Cog } from "lucide-react"
 import { cn } from "@/lib/utils"
 import Image from 'next/image';
 
@@ -10,6 +10,7 @@ const tabs = [
   { name: "Live Lectures", icon: PlayCircle },
   { name: "Course Catalog", icon: BookOpen },
   { name: "About", icon: Info },
+  { name: "Technical", icon: Cog },
 ]
 
 interface SidebarProps {
