@@ -17,7 +17,8 @@ import {
   UserGroupIcon,
   UserIcon,
   ArrowRightIcon,
-  ArrowsUpDownIcon
+  ArrowsUpDownIcon,
+  CalendarDaysIcon
 } from '@heroicons/react/24/outline';
 import { BoltIcon } from '@heroicons/react/24/solid';
 import Image from 'next/image';
@@ -304,12 +305,13 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
   };
 
   const renderTableHeader = (showTimeRemaining = false, showBeginsIn = false) => (
-    <div className={`grid grid-cols-[2fr,1.5fr,1fr,0.7fr,0.7fr,1fr,0.8fr] gap-x-2 px-6 py-3 bg-gray-700 text-xs font-medium ${showTimeRemaining ? 'text-gray-100' : 'text-gray-400'} uppercase tracking-wider`}>
+    <div className={`grid ${showTimeRemaining ? 'grid-cols-[2fr,1.5fr,1fr,0.7fr,0.7fr,1fr,0.8fr]' : showBeginsIn ? 'grid-cols-[2fr,1.5fr,1fr,0.7fr,0.7fr,1fr,0.8fr]' : 'grid-cols-[2fr,1.5fr,1fr,0.7fr,0.7fr,0.7fr,1fr]'} gap-x-2 px-6 py-3 bg-gray-700 text-xs font-medium ${showTimeRemaining ? 'text-gray-100' : 'text-gray-400'} uppercase tracking-wider`}>
       <div className="pl-8">Class</div>
       <div className="pl-9">Professor</div>
       <div className="pl-2">Building</div>
       <div className="pl-4">Room</div>
       <div className="pl-2">Seats</div>
+      {!showTimeRemaining && !showBeginsIn && <div className="pl-2">Days</div>}
       <div className="pl-16">Time</div>
       {(showTimeRemaining || showBeginsIn) && (
         <div className={`text-right pr-2 ${showBeginsIn ? 'text-blue-400' : 'text-yellow-400'}`}>
@@ -337,7 +339,7 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
     return (
       <div
         key={classItem.id}
-        className={`grid ${status === 'live' ? 'grid-cols-[2fr,1.5fr,1fr,0.7fr,0.7fr,1fr,0.8fr]' : status === 'upcoming' ? 'grid-cols-[2fr,1.5fr,1fr,0.7fr,0.7fr,1fr,0.8fr]' : 'grid-cols-[2fr,1.5fr,1fr,0.7fr,0.7fr,1fr]'} gap-x-2 px-6 py-4 text-sm hover:bg-gray-700/50 ${!isLast && 'border-b border-gray-700'} min-h-[4rem]`}
+        className={`grid ${status === 'live' ? 'grid-cols-[2fr,1.5fr,1fr,0.7fr,0.7fr,1fr,0.8fr]' : status === 'upcoming' ? 'grid-cols-[2fr,1.5fr,1fr,0.7fr,0.7fr,1fr,0.8fr]' : 'grid-cols-[2fr,1.5fr,1fr,0.7fr,0.7fr,0.7fr,1fr]'} gap-x-2 px-6 py-4 text-sm hover:bg-gray-700/50 ${!isLast && 'border-b border-gray-700'} min-h-[4rem]`}
       >
         <div className={cellClass}>
           <div className="flex items-center gap-3">
@@ -361,9 +363,15 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
           <UserGroupIcon className={iconClass} />
           <span>{classItem.capacity}</span>
         </div>
+        {status === 'catalog' && (
+          <div className={cellClass}>
+            <CalendarDaysIcon className={iconClass} />
+            <span>{classItem.days}</span>
+          </div>
+        )}
         <div className={cellClass}>
           <ClockIcon className={iconClass} />
-          <span className="whitespace-nowrap">{formattedTime}</span>
+          <span>{formattedTime}</span>
         </div>
         {(status === 'live' || status === 'upcoming') && (
           <div className={`${cellClass} justify-end pr-2`}>
@@ -655,15 +663,19 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
           </div>
         </div>
         {filteredUpcomingClasses.length > 0 ? (
-          <div className="bg-gray-800 rounded-lg overflow-hidden">
-            {renderTableHeader(false, true)}
-            {filteredUpcomingClasses.map((c, i) => 
-              renderClassRow(c, 'upcoming', i === filteredUpcomingClasses.length - 1)
-            )}
+          <div className="mt-8">
+            <div className="bg-gray-800 rounded-lg overflow-hidden">
+              {renderTableHeader(false, true)}
+              {filteredUpcomingClasses.map((c, i) => 
+                renderClassRow(c, 'upcoming', i === filteredUpcomingClasses.length - 1)
+              )}
+            </div>
           </div>
         ) : (
-          <div className="text-center py-8 text-gray-400">
-            No classes starting in the selected time frame
+          <div className="mt-8">
+            <div className="text-center py-8 text-gray-400">
+              No classes starting in the selected time frame
+            </div>
           </div>
         )}
       </div>
