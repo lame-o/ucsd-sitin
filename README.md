@@ -1,3 +1,27 @@
+# UCSD Sit-In
+
+A real-time lecture availability tracker for UCSD, built as an expansion upon the Schedule Surfer scraper. This web application helps students find and monitor available lecture spaces across campus.
+
+## Project Overview
+
+This project extends the functionality of the Schedule Surfer scraper by providing a live, user-friendly interface for viewing lecture availability. The application displays both currently ongoing lectures and upcoming classes, making it easier for students to find potential spaces to sit in on lectures.
+
+### Current Features
+
+- Real-time tracking of ongoing lectures across UCSD
+- Comprehensive course catalog view
+- Live updates of class times and availability
+- Clean, modern interface with easy filtering
+- Integration with Airtable for data management
+- Displays key information including:
+  - Course details (code, name)
+  - Professor
+  - Location (building and room)
+  - Time and days
+  - Meeting type
+
+## Technical Implementation
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
