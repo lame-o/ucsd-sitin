@@ -7,7 +7,8 @@ import {
   formatPSTTime, 
   formatTime, 
   getTimeRemaining,
-  getRemainingMinutes 
+  getRemainingMinutes,
+  isClassDay
 } from '../utils/time';
 import { 
   BuildingOffice2Icon, 
@@ -48,8 +49,142 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
   const [selectedSubject, setSelectedSubject] = useState<string>('');
   const [selectedUpcomingSubject, setSelectedUpcomingSubject] = useState<string>('');
   const [selectedTimeFrame, setSelectedTimeFrame] = useState<number>(60); // Default 1 hour (60 minutes)
+  const [selectedCatalogSubject, setSelectedCatalogSubject] = useState<string>('');
   const [sortByRecent, setSortByRecent] = useState(false);
   const [, forceUpdate] = useState({});
+
+  // Extract all unique subjects and create subject descriptions
+  const { subjects, groupedSubjects, subjectDescriptions } = useMemo(() => {
+    const subjectSet = new Set<string>();
+    const descriptions: Record<string, string> = {
+      'AAS': 'African American Studies',
+      'ANBI': 'Anthro/Biological Anthropology',
+      'ANAR': 'Anthropological Archaeology',
+      'ANTH': 'Anthropology',
+      'ANSC': 'Anthropology/Sociocultural',
+      'ASTR': 'Astronomy and Astrophysics',
+      'BENG': 'Bioengineering',
+      'BIEB': 'Biol/Ecology, Behavior, & Evol',
+      'BICD': 'Biol/Genetics,Cellular&Develop',
+      'BIPN': 'Biology/Animal Physiol&Neurosc',
+      'BIBC': 'Biology/Biochemistry',
+      'BILD': 'Biology/Lower Division',
+      'BIMM': 'Biology/Molec Biol, Microbiol',
+      'CENG': 'Chemical Engineering',
+      'CHEM': 'Chemistry and Biochemistry',
+      'CHIN': 'Chinese Studies',
+      'CCS': 'Climate Change Studies',
+      'COGS': 'Cognitive Science',
+      'COMM': 'Communication',
+      'CSS': 'Computational Social Science',
+      'CSE': 'Computer Science & Engineering',
+      'CGS': 'Critical Gender Studies',
+      'CAT': 'Culture, Art, & Technology',
+      'DSC': 'Data Science',
+      'DSGN': 'Design',
+      'DOC': 'Dimensions of Culture',
+      'ECON': 'Economics',
+      'EDS': 'Education Studies',
+      'ECE': 'Electrical & Computer Engineer',
+      'ENG': 'Engineering',
+      'ENVR': 'Environmental Studies',
+      'ESYS': 'Environmental Systems',
+      'ETHN': 'Ethnic Studies',
+      'GLBH': 'Global Health',
+      'GSS': 'Global South Studies',
+      'HITO': 'History Topics',
+      'HIAF': 'History of Africa',
+      'HIEA': 'History of East Asia',
+      'HIEU': 'History of Europe',
+      'HILA': 'History of Latin America',
+      'HISC': 'History of Science',
+      'HISA': 'History of South Asia',
+      'HINE': 'History of the Near East',
+      'HIUS': 'History of the United States',
+      'HILD': 'History, Lower Division',
+      'HDS': 'Human Developmental Sciences',
+      'HUM': 'Humanities',
+      'INTL': 'International Studies',
+      'JAPN': 'Japanese Studies',
+      'JWSP': 'Jewish Studies Program',
+      'LATI': 'Latin American Studies',
+      'LAWS': 'Law and Society',
+      'LIAB': 'Linguistics/Arabic',
+      'LIGN': 'Linguistics/General',
+      'LIHL': 'Linguistics/Heritage Languages',
+      'LISP': 'Linguistics/Spanish',
+      'LTAM': 'Literature of the Americas',
+      'LTCS': 'Literature/Cultural Studies',
+      'LTEU': 'Literature/European & Eurasian',
+      'LTFR': 'Literature/French',
+      'LTGM': 'Literature/German',
+      'LTGK': 'Literature/Greek',
+      'LTIT': 'Literature/Italian',
+      'LTKO': 'Literature/Korean',
+      'LTLA': 'Literature/Latin',
+      'LTRU': 'Literature/Russian',
+      'LTSP': 'Literature/Spanish',
+      'LTWR': 'Literature/Writing',
+      'LTEN': 'Literatures in English',
+      'LTWL': 'Literatures of the World',
+      'LTEA': 'Literatures/East Asian',
+      'MMW': 'Making of the Modern World',
+      'MATH': 'Mathematics',
+      'MAE': 'Mechanical & Aerospace Engin',
+      'MUS': 'Music',
+      'MGT': 'Rady School of Management',
+      'NANO': 'NanoEngineering',
+      'PHIL': 'Philosophy',
+      'PHYS': 'Physics',
+      'POLI': 'Political Science',
+      'PSYC': 'Psychology',
+      'PH': 'Public Health',
+      'RELI': 'Religion, Study of',
+      'SIO': 'Scripps Inst of Oceanography',
+      'SOCI': 'Sociology',
+      'SE': 'Structural Engineering',
+      'SYN': 'Synthesis',
+      'TDAC': 'Theatre / Acting',
+      'TDDE': 'Theatre / Design',
+      'TDDR': 'Theatre / Directing&Stage Mgmt',
+      'TDGE': 'Theatre / General',
+      'TDHD': 'Dance/History',
+      'TDTR': 'Dance/Theory',
+      'TDHT': 'Theatre / History & Theory',
+      'TMC': 'Thurgood Marshall College',
+      'USP': 'Urban Studies & Planning',
+      'VIS': 'Visual Arts',
+      'WCWP': 'Warren College Writing Program'
+    };
+
+    // Get all subjects from classes
+    classes.forEach(c => {
+      const match = c.courseCode.match(/^([A-Z]+)/);
+      if (match) subjectSet.add(match[0]);
+    });
+
+    // Sort subjects and add dividers
+    const sortedSubjects = Array.from(subjectSet).sort();
+    const grouped: (string | null)[] = [];
+    let lastInitial = '';
+
+    sortedSubjects.forEach(subject => {
+      const initial = subject[0];
+      if (initial !== lastInitial) {
+        if (lastInitial !== '') {
+          grouped.push(null); // Add divider
+        }
+        lastInitial = initial;
+      }
+      grouped.push(subject);
+    });
+
+    return {
+      subjects: sortedSubjects,
+      groupedSubjects: grouped,
+      subjectDescriptions: descriptions
+    };
+  }, [classes]);
 
   // Update time every minute
   useEffect(() => {
@@ -118,31 +253,31 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
     return parseTime(startTime).getTime();
   };
 
-  // Split and sort classes
-  const liveClasses = classes
-    .filter(c => {
-      const [startTime, endTime] = c.time.split('-');
-      return isClassLive(startTime, endTime);
-    })
-    .sort((a, b) => {
-      // Get end times from time strings
-      const [, endTimeA] = a.time.split('-');
-      const [, endTimeB] = b.time.split('-');
-      
-      // Sort by most time remaining (descending)
-      return getRemainingMinutes(endTimeB) - getRemainingMinutes(endTimeA);
-    });
+  // Memoize live classes filtering
+  const filteredLiveClasses = useMemo(() => {
+    return classes
+      .filter((c) => {
+        const [startTime, endTime] = c.time.split('-');
+        return isClassLive(startTime, endTime, c.days);
+      })
+      .filter(c => !selectedSubject || c.courseCode.startsWith(selectedSubject))
+      .sort((a, b) => {
+        const [, endTimeA] = a.time.split('-');
+        const [, endTimeB] = b.time.split('-');
+        return getRemainingMinutes(endTimeB) - getRemainingMinutes(endTimeA);
+      });
+  }, [classes, selectedSubject, currentTime]);
 
   const upcomingClasses = useMemo(() => {
     return classes
       .filter((c) => {
-        const [startTime] = c.time.split('-');
+        const [startTime, endTime] = c.time.split('-');
         const startDate = parseTime(startTime);
         const minutesUntilStart = (startDate.getTime() - new Date().getTime()) / 60000;
-        return minutesUntilStart > 0 && minutesUntilStart <= selectedTimeFrame;
+        return isClassDay(c.days) && minutesUntilStart > 0 && minutesUntilStart <= selectedTimeFrame;
       })
       .sort((a, b) => getStartTime(a.time) - getStartTime(b.time)); // Sort by start time
-  }, [classes, parseTime, selectedTimeFrame]);
+  }, [classes, parseTime, selectedTimeFrame, currentTime]);
 
   const getTimeUntilStart = (startTime: string) => {
     const now = new Date();
@@ -157,7 +292,7 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
   };
 
   const renderTableHeader = (showTimeRemaining = false, showBeginsIn = false) => (
-    <div className={`grid ${showTimeRemaining ? 'grid-cols-[2fr,1.5fr,1fr,0.7fr,0.7fr,1fr,0.8fr]' : showBeginsIn ? 'grid-cols-[2fr,1.5fr,1fr,0.7fr,0.7fr,1fr,0.8fr]' : 'grid-cols-[2fr,1.5fr,1fr,0.7fr,0.7fr,1fr]'} gap-x-2 px-6 py-3 bg-gray-700 text-xs font-medium ${showTimeRemaining ? 'text-gray-100' : 'text-gray-400'} uppercase tracking-wider`}>
+    <div className={`grid grid-cols-[2fr,1.5fr,1fr,0.7fr,0.7fr,1fr,0.8fr] gap-x-2 px-6 py-3 bg-gray-700 text-xs font-medium ${showTimeRemaining ? 'text-gray-100' : 'text-gray-400'} uppercase tracking-wider`}>
       <div className="pl-8">Class</div>
       <div className="pl-9">Professor</div>
       <div className="pl-2">Building</div>
@@ -235,19 +370,77 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
   };
 
   if (mode === 'catalog') {
+    // Get count of unique subjects in catalog
+    const catalogSubjectsCount = useMemo(() => {
+      const subjectSet = new Set<string>();
+      sortedClasses.forEach(c => {
+        const match = c.courseCode.match(/^([A-Z]+)/);
+        if (match) subjectSet.add(match[0]);
+      });
+      return subjectSet.size;
+    }, [sortedClasses]);
+
+    // Filter catalog classes by subject
+    const filteredCatalogClasses = useMemo(() => {
+      return selectedCatalogSubject
+        ? sortedClasses.filter(c => c.courseCode.startsWith(selectedCatalogSubject))
+        : sortedClasses;
+    }, [sortedClasses, selectedCatalogSubject]);
+
     return (
       <div className="space-y-8">
-        <div className="flex justify-between items-center border-b border-gray-700 pb-4">
-          <div>
-            <h1 className="text-4xl font-bold text-gray-100">Course Catalog (...give it a second)</h1>
-            <p className="text-gray-400 mt-2">Showing {classes.length} total classes</p>
+        <div className="border-b border-gray-700 pb-4">
+          <h1 className="text-4xl font-bold text-white mb-4 py-4">Course Catalog (...give it a second)</h1>
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="w-96">
+                <select
+                  value={selectedCatalogSubject}
+                  onChange={(e) => setSelectedCatalogSubject(e.target.value)}
+                  className="w-full text-sm text-gray-300 bg-gray-700 rounded-md border border-gray-600 hover:border-gray-500 transition-colors px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#f2a900] focus:ring-opacity-75"
+                >
+                  <option value="">All Subjects</option>
+                  <option disabled className="border-t border-gray-600 text-gray-500">
+                    ──────────────────────────
+                  </option>
+                  {groupedSubjects.map((subject, index) => 
+                    subject === null ? (
+                      <option 
+                        key={`divider-${index}`} 
+                        disabled 
+                        className="border-t border-gray-600 text-gray-500"
+                      >
+                        ──────────────────────────
+                      </option>
+                    ) : subject === '' ? null : (
+                      <option key={subject} value={subject}>
+                        {subject}{subjectDescriptions[subject] ? ` - ${subjectDescriptions[subject]}` : ''}
+                      </option>
+                    )
+                  )}
+                </select>
+              </div>
+              <p className="text-gray-400">
+                Showing {filteredCatalogClasses.length} courses
+                {selectedCatalogSubject 
+                  ? ` in ${selectedCatalogSubject}` 
+                  : ` across ${catalogSubjectsCount} subjects`}
+              </p>
+            </div>
           </div>
         </div>
-
-        <div className="bg-gray-800 rounded-lg overflow-hidden">
-          {renderTableHeader()}
-          {!isSorting && sortedClasses.map((c, i) => 
-            renderClassRow(c, 'catalog', i === sortedClasses.length - 1)
+        <div className="mt-4">
+          {isSorting ? (
+            <div className="text-center py-8 text-gray-400">
+              Sorting {classes.length} classes...
+            </div>
+          ) : (
+            <div className="bg-gray-800 rounded-lg overflow-hidden">
+              {renderTableHeader()}
+              {filteredCatalogClasses.map((c, i) => 
+                renderClassRow(c, 'catalog', i === filteredCatalogClasses.length - 1)
+              )}
+            </div>
           )}
         </div>
       </div>
@@ -261,182 +454,25 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
     return Math.floor((now.getTime() - startDate.getTime()) / 60000);
   }, []);
 
-  // Extract subjects once and memoize
-  const subjects = useMemo(() => {
-    const subjectSet = new Set<string>();
-    for (const c of classes) {
-      const match = c.courseCode.match(/^([A-Z]+)/);
-      if (match) subjectSet.add(match[0]);
-    }
-    return Array.from(subjectSet).sort();
-  }, [classes]);
-
-  // Subject descriptions mapping
-  const subjectDescriptions: { [key: string]: string } = {
-    'AAS': 'African American Studies',
-    'ANBI': 'Anthro/Biological Anthropology',
-    'ANAR': 'Anthropological Archaeology',
-    'ANTH': 'Anthropology',
-    'ANSC': 'Anthropology/Sociocultural',
-    'ASTR': 'Astronomy and Astrophysics',
-    'BENG': 'Bioengineering',
-    'BIEB': 'Biol/Ecology, Behavior, & Evol',
-    'BICD': 'Biol/Genetics,Cellular&Develop',
-    'BIPN': 'Biology/Animal Physiol&Neurosc',
-    'BIBC': 'Biology/Biochemistry',
-    'BILD': 'Biology/Lower Division',
-    'BIMM': 'Biology/Molec Biol, Microbiol',
-    'CENG': 'Chemical Engineering',
-    'CHEM': 'Chemistry and Biochemistry',
-    'CHIN': 'Chinese Studies',
-    'CCS': 'Climate Change Studies',
-    'COGS': 'Cognitive Science',
-    'COMM': 'Communication',
-    'CSS': 'Computational Social Science',
-    'CSE': 'Computer Science & Engineering',
-    'CGS': 'Critical Gender Studies',
-    'CAT': 'Culture, Art, & Technology',
-    'DSC': 'Data Science',
-    'DSGN': 'Design',
-    'DOC': 'Dimensions of Culture',
-    'ECON': 'Economics',
-    'EDS': 'Education Studies',
-    'ECE': 'Electrical & Computer Engineer',
-    'ENG': 'Engineering',
-    'ENVR': 'Environmental Studies',
-    'ESYS': 'Environmental Systems',
-    'ETHN': 'Ethnic Studies',
-    'GLBH': 'Global Health',
-    'GSS': 'Global South Studies',
-    'HITO': 'History Topics',
-    'HIAF': 'History of Africa',
-    'HIEA': 'History of East Asia',
-    'HIEU': 'History of Europe',
-    'HILA': 'History of Latin America',
-    'HISC': 'History of Science',
-    'HISA': 'History of South Asia',
-    'HINE': 'History of the Near East',
-    'HIUS': 'History of the United States',
-    'HILD': 'History, Lower Division',
-    'HDS': 'Human Developmental Sciences',
-    'HUM': 'Humanities',
-    'INTL': 'International Studies',
-    'JAPN': 'Japanese Studies',
-    'JWSP': 'Jewish Studies Program',
-    'LATI': 'Latin American Studies',
-    'LAWS': 'Law and Society',
-    'LIAB': 'Linguistics/Arabic',
-    'LIGN': 'Linguistics/General',
-    'LIHL': 'Linguistics/Heritage Languages',
-    'LISP': 'Linguistics/Spanish',
-    'LTAM': 'Literature of the Americas',
-    'LTCS': 'Literature/Cultural Studies',
-    'LTEU': 'Literature/European & Eurasian',
-    'LTFR': 'Literature/French',
-    'LTGM': 'Literature/German',
-    'LTGK': 'Literature/Greek',
-    'LTIT': 'Literature/Italian',
-    'LTKO': 'Literature/Korean',
-    'LTLA': 'Literature/Latin',
-    'LTRU': 'Literature/Russian',
-    'LTSP': 'Literature/Spanish',
-    'LTWR': 'Literature/Writing',
-    'LTEN': 'Literatures in English',
-    'LTWL': 'Literatures of the World',
-    'LTEA': 'Literatures/East Asian',
-    'MMW': 'Making of the Modern World',
-    'MATH': 'Mathematics',
-    'MAE': 'Mechanical & Aerospace Engin',
-    'MUS': 'Music',
-    'MGT': 'Rady School of Management',
-    'NANO': 'NanoEngineering',
-    'PHIL': 'Philosophy',
-    'PHYS': 'Physics',
-    'POLI': 'Political Science',
-    'PSYC': 'Psychology',
-    'PH': 'Public Health',
-    'RELI': 'Religion, Study of',
-    'SIO': 'Scripps Inst of Oceanography',
-    'SOCI': 'Sociology',
-    'SE': 'Structural Engineering',
-    'SYN': 'Synthesis',
-    'TDAC': 'Theatre / Acting',
-    'TDDE': 'Theatre / Design',
-    'TDDR': 'Theatre / Directing&Stage Mgmt',
-    'TDGE': 'Theatre / General',
-    'TDHD': 'Dance/History',
-    'TDTR': 'Dance/Theory',
-    'TDHT': 'Theatre / History & Theory',
-    'TMC': 'Thurgood Marshall College',
-    'USP': 'Urban Studies & Planning',
-    'VIS': 'Visual Arts',
-    'WCWP': 'Warren College Writing Program'
-  };
-
-  // Group subjects by first letter and add dividers
-  const groupedSubjects = useMemo(() => {
-    const result: (string | null)[] = [''];  // Start with empty option
-    let currentLetter = '';
-    
-    subjects.forEach((subject) => {
-      const firstLetter = subject[0];
-      if (firstLetter !== currentLetter) {
-        if (currentLetter !== '') {
-          result.push(null); // Add divider
-        }
-        currentLetter = firstLetter;
-      }
-      result.push(subject);
-    });
-    
-    return result;
-  }, [subjects]);
-
-  // Memoize live classes filtering
-  const filteredLiveClasses = useMemo(() => {
-    let filtered = selectedSubject
-      ? liveClasses.filter(c => c.courseCode.startsWith(selectedSubject))
-      : liveClasses;
-
-    // Sort based on toggle
-    filtered = [...filtered].sort((a, b) => {
-      if (sortByRecent) {
-        // Sort by start time
-        const [startTimeA] = a.time.split('-');
-        const [startTimeB] = b.time.split('-');
-        const timeA = parseTime(startTimeA).getTime();
-        const timeB = parseTime(startTimeB).getTime();
-        return timeB - timeA; // Most recent first
-      } else {
-        // Sort by most time remaining (original sort)
-        const [, endTimeA] = a.time.split('-');
-        const [, endTimeB] = b.time.split('-');
-        return getRemainingMinutes(endTimeB) - getRemainingMinutes(endTimeA);
-      }
-    });
-
-    return filtered;
-  }, [liveClasses, selectedSubject, sortByRecent, parseTime, getRemainingMinutes]);
-
   // Get count of unique subjects in live lectures
   const liveSubjectsCount = useMemo(() => {
     const subjectSet = new Set<string>();
-    liveClasses.forEach(c => {
+    classes.forEach(c => {
       const match = c.courseCode.match(/^([A-Z]+)/);
       if (match) subjectSet.add(match[0]);
     });
     return subjectSet.size;
-  }, [liveClasses]);
+  }, [classes]);
 
   // Get count of unique subjects in upcoming lectures
   const upcomingSubjectsCount = useMemo(() => {
     const subjectSet = new Set<string>();
-    upcomingClasses.forEach(c => {
+    classes.forEach(c => {
       const match = c.courseCode.match(/^([A-Z]+)/);
       if (match) subjectSet.add(match[0]);
     });
     return subjectSet.size;
-  }, [upcomingClasses]);
+  }, [classes]);
 
   // Filter upcoming classes by subject
   const filteredUpcomingClasses = useMemo(() => {
@@ -455,7 +491,7 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
               alt="UCSD"
               width={175}
               height={175}
-              className="rounded-sm"
+              className="-mt-1.5 h-175 w-175"
             />
             <span className="text-4xl text-white font-bold">Live Lectures</span>
           </h1>
@@ -465,7 +501,7 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
                 <select
                   value={selectedSubject}
                   onChange={(e) => setSelectedSubject(e.target.value)}
-                  className="w-full text-sm text-gray-300 hover:text-white bg-gray-700 rounded-md border border-gray-600 hover:border-gray-500 transition-colors px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full text-sm text-gray-300 bg-gray-700 rounded-md border border-gray-600 hover:border-gray-500 transition-colors px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">All Subjects</option>
                   <option disabled className="border-t border-gray-600 text-gray-500">
@@ -490,17 +526,24 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
               </div>
               <button
                 onClick={() => setSortByRecent(!sortByRecent)}
-                className="flex items-center gap-2 px-3 py-2 text-sm text-gray-300 hover:text-white bg-gray-700 rounded-md border border-gray-600 hover:border-gray-500 transition-colors"
+                className="flex items-center gap-2 px-3 py-2 text-sm text-gray-300 bg-gray-700 rounded-md border border-gray-600 hover:border-gray-500 transition-colors"
                 title={sortByRecent ? "Sort by time remaining" : "Sort by recently started"}
               >
                 <ArrowsUpDownIcon className="h-4 w-4" />
                 {sortByRecent ? "Recently Started" : "Time Remaining"}
               </button>
               <p className="text-gray-400">
-                Showing {filteredLiveClasses.length} live lectures
-                {selectedSubject 
-                  ? ` in ${selectedSubject}` 
-                  : ` across ${liveSubjectsCount} subjects`}
+                {filteredLiveClasses.length === 0 ? (
+                  'No live lectures'
+                ) : (
+                  <>
+                    Showing <span className="text-white">{filteredLiveClasses.length}</span> live lectures
+                    {selectedSubject 
+                      ? <> in <span className="text-white">{selectedSubject}</span></>
+                      : <> across <span className="text-white">{liveSubjectsCount}</span> subjects</>
+                    }
+                  </>
+                )}
               </p>
             </div>
             <div className="text-xl font-mono text-gray-300 ml-auto">Current Time: {currentTime} PST</div>
@@ -519,68 +562,99 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
         </div>
       )}
 
-      {upcomingClasses.length > 0 && (
-        <div>
-          <div className="border-b border-gray-700 pb-4">
-            <h2 className="text-2xl font-bold text-gray-300">Starting Soon</h2>
-            <div className="flex items-center justify-between gap-4 mt-2">
-              <div className="flex items-center gap-4">
-                <div className="w-96">
-                  <select
-                    value={selectedUpcomingSubject}
-                    onChange={(e) => setSelectedUpcomingSubject(e.target.value)}
-                    className="w-full text-sm text-gray-300 hover:text-white bg-gray-700 rounded-md border border-gray-600 hover:border-gray-500 transition-colors px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">All Subjects</option>
-                    <option disabled className="border-t border-gray-600 text-gray-500">
-                      ──────────────────────────
-                    </option>
-                    {groupedSubjects.map((subject, index) => 
-                      subject === null ? (
-                        <option 
-                          key={`divider-${index}`} 
-                          disabled 
-                          className="border-t border-gray-600 text-gray-500"
-                        >
-                          ──────────────────────────
-                        </option>
-                      ) : subject === '' ? null : (
-                        <option key={subject} value={subject}>
-                          {subject}{subjectDescriptions[subject] ? ` - ${subjectDescriptions[subject]}` : ''}
-                        </option>
-                      )
-                    )}
-                  </select>
-                </div>
-                <div>
-                  <select
-                    value={selectedTimeFrame}
-                    onChange={(e) => setSelectedTimeFrame(Number(e.target.value))}
-                    className="text-sm text-gray-300 hover:text-white bg-gray-700 rounded-md border border-gray-600 hover:border-gray-500 transition-colors px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value={30}>Next 30m</option>
-                    <option value={60}>Next 1h</option>
-                    <option value={120}>Next 2h</option>
-                  </select>
-                </div>
-                <p className="text-gray-400">
-                  Showing {filteredUpcomingClasses.length} upcoming lectures
-                  {selectedUpcomingSubject 
-                    ? ` in ${selectedUpcomingSubject}` 
-                    : ` across ${upcomingSubjectsCount} subjects`}
-                  {` starting within ${selectedTimeFrame === 60 ? '1h' : selectedTimeFrame === 30 ? '30m' : '2h'}`}
-                </p>
+      <div>
+        <div className="border-b border-gray-700 pb-4">
+          <h2 className="text-2xl font-bold text-gray-300">Starting Soon</h2>
+          <div className="flex items-center justify-between gap-4 mt-2">
+            <div className="flex items-center gap-4">
+              <div className="w-96">
+                <select
+                  value={selectedUpcomingSubject}
+                  onChange={(e) => setSelectedUpcomingSubject(e.target.value)}
+                  className="w-full text-sm text-gray-300 bg-gray-700 rounded-md border border-gray-600 hover:border-gray-500 transition-colors px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">All Subjects</option>
+                  <option disabled className="border-t border-gray-600 text-gray-500">
+                    ──────────────────────────
+                  </option>
+                  {groupedSubjects.map((subject, index) => 
+                    subject === null ? (
+                      <option 
+                        key={`divider-${index}`} 
+                        disabled 
+                        className="border-t border-gray-600 text-gray-500"
+                      >
+                        ──────────────────────────
+                      </option>
+                    ) : subject === '' ? null : (
+                      <option key={subject} value={subject}>
+                        {subject}{subjectDescriptions[subject] ? ` - ${subjectDescriptions[subject]}` : ''}
+                      </option>
+                    )
+                  )}
+                </select>
               </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setSelectedTimeFrame(30)}
+                  className={`px-3 py-1.5 rounded ${
+                    selectedTimeFrame === 30
+                      ? 'bg-gray-700 text-white'
+                      : 'text-gray-400 hover:text-gray-300'
+                  }`}
+                >
+                  30m
+                </button>
+                <button
+                  onClick={() => setSelectedTimeFrame(60)}
+                  className={`px-3 py-1.5 rounded ${
+                    selectedTimeFrame === 60
+                      ? 'bg-gray-700 text-white'
+                      : 'text-gray-400 hover:text-gray-300'
+                  }`}
+                >
+                  1h
+                </button>
+                <button
+                  onClick={() => setSelectedTimeFrame(120)}
+                  className={`px-3 py-1.5 rounded ${
+                    selectedTimeFrame === 120
+                      ? 'bg-gray-700 text-white'
+                      : 'text-gray-400 hover:text-gray-300'
+                  }`}
+                >
+                  2h
+                </button>
+              </div>
+              <p className="text-gray-400">
+                {filteredUpcomingClasses.length === 0 ? (
+                  <>No classes starting in the next <span className="text-white">{selectedTimeFrame === 60 ? '1h' : selectedTimeFrame === 30 ? '30m' : '2h'}</span></>
+                ) : (
+                  <>
+                    There are <span className="text-white">{filteredUpcomingClasses.length}</span> lectures
+                    {selectedUpcomingSubject 
+                      ? <> in <span className="text-white">{selectedUpcomingSubject}</span></>
+                      : <> across <span className="text-white">{upcomingSubjectsCount}</span> subjects</>
+                    } starting within <span className="text-white">{selectedTimeFrame === 60 ? '1h' : selectedTimeFrame === 30 ? '30m' : '2h'}</span>
+                  </>
+                )}
+              </p>
             </div>
           </div>
-          <div className="mt-4 bg-gray-800 rounded-lg overflow-hidden opacity-75">
+        </div>
+        {filteredUpcomingClasses.length > 0 ? (
+          <div className="bg-gray-800 rounded-lg overflow-hidden">
             {renderTableHeader(false, true)}
             {filteredUpcomingClasses.map((c, i) => 
               renderClassRow(c, 'upcoming', i === filteredUpcomingClasses.length - 1)
             )}
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="text-center py-8 text-gray-400">
+            No classes starting in the selected time frame
+          </div>
+        )}
+      </div>
     </div>
   );
 }
