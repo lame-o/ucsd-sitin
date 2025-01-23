@@ -124,7 +124,6 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
   const liveClasses = classes
     .filter(c => {
       const [startTime, endTime] = c.time.split('-');
-      console.log(`Checking if ${c.courseCode} is live:`, c.time);
       return isClassLive(startTime, endTime);
     })
     .sort((a, b) => {
@@ -139,7 +138,6 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
   const upcomingClasses = classes
     .filter(c => {
       const [startTime, endTime] = c.time.split('-');
-      console.log(`Checking if ${c.courseCode} is upcoming:`, c.time);
       return isClassUpcoming(startTime, endTime);
     })
     .sort((a, b) => getStartTime(a.time) - getStartTime(b.time));
@@ -157,19 +155,22 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
   };
 
   const renderTableHeader = (showTimeRemaining = false, showBeginsIn = false) => (
-    <div className={`grid ${showTimeRemaining ? 'grid-cols-[2fr,1.5fr,1fr,0.7fr,0.7fr,1.2fr,1fr]' : showBeginsIn ? 'grid-cols-[2fr,1.5fr,1fr,0.7fr,0.7fr,1.2fr,1fr]' : 'grid-cols-[2fr,1.5fr,1fr,0.7fr,0.7fr,1.2fr]'} gap-x-2 px-6 py-3 bg-gray-700 text-xs font-medium ${showTimeRemaining ? 'text-gray-100' : 'text-gray-400'} uppercase tracking-wider`}>
-      <div className="pl-5">Class</div>
-      <div className="pl-7">Instructor</div>
-      <div className="pl-1">Building</div>
-      <div className="pl-3">Room</div>
+    <div className={`grid ${showTimeRemaining ? 'grid-cols-[2fr,1.5fr,1fr,0.7fr,0.7fr,1fr,0.8fr]' : showBeginsIn ? 'grid-cols-[2fr,1.5fr,1fr,0.7fr,0.7fr,1fr,0.8fr]' : 'grid-cols-[2fr,1.5fr,1fr,0.7fr,0.7fr,1fr]'} gap-x-2 px-6 py-3 bg-gray-700 text-xs font-medium ${showTimeRemaining ? 'text-gray-100' : 'text-gray-400'} uppercase tracking-wider`}>
+      <div className="pl-8">Class</div>
+      <div className="pl-9">Professor</div>
+      <div className="pl-2">Building</div>
+      <div className="pl-4">Room</div>
       <div className="pl-2">Seats</div>
       <div className="pl-16">Time</div>
-      {showTimeRemaining && <div className="pl-4 text-yellow-400">Time Left</div>}
-      {showBeginsIn && <div className="pl-4 text-blue-400">Begins In</div>}
+      {(showTimeRemaining || showBeginsIn) && (
+        <div className={`text-right pr-2 ${showBeginsIn ? 'text-blue-400' : 'text-yellow-400'}`}>
+          {showTimeRemaining ? 'Time Left' : 'Begins In'}
+        </div>
+      )}
     </div>
   );
 
-  const renderClassRow = (classItem: ClassItem, status: 'live' | 'upcoming' | 'other' = 'other', isLast = false) => {
+  const renderClassRow = (classItem: ClassItem, status: 'live' | 'upcoming' | 'catalog', isLast: boolean) => {
     const dotColor = status === 'live' ? 'bg-green-500' : status === 'upcoming' ? 'bg-yellow-500' : 'bg-gray-500';
     const dotAnimation = status === 'live' ? 'animate-pulse' : '';
     
@@ -187,7 +188,7 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
     return (
       <div
         key={classItem.id}
-        className={`grid ${showTimeRemaining ? 'grid-cols-[2fr,1.5fr,1fr,0.7fr,0.7fr,1.2fr,1fr]' : showBeginsIn ? 'grid-cols-[2fr,1.5fr,1fr,0.7fr,0.7fr,1.2fr,1fr]' : 'grid-cols-[2fr,1.5fr,1fr,0.7fr,0.7fr,1.2fr]'} gap-x-2 px-6 py-4 text-sm hover:bg-gray-700/50 ${!isLast && 'border-b border-gray-700'} min-h-[4rem]`}
+        className={`grid ${status === 'live' ? 'grid-cols-[2fr,1.5fr,1fr,0.7fr,0.7fr,1fr,0.8fr]' : status === 'upcoming' ? 'grid-cols-[2fr,1.5fr,1fr,0.7fr,0.7fr,1fr,0.8fr]' : 'grid-cols-[2fr,1.5fr,1fr,0.7fr,0.7fr,1fr]'} gap-x-2 px-6 py-4 text-sm hover:bg-gray-700/50 ${!isLast && 'border-b border-gray-700'} min-h-[4rem]`}
       >
         <div className={cellClass}>
           <div className="flex items-center gap-3">
@@ -215,16 +216,16 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
           <ClockIcon className={iconClass} />
           <span className="whitespace-nowrap">{formattedTime}</span>
         </div>
-        {showTimeRemaining && (
-          <div className={cellClass}>
-            <BoltIcon className="w-5 h-5 text-yellow-400 flex-shrink-0" />
-            <span className="whitespace-nowrap text-yellow-400">{getTimeRemaining(endTime)}</span>
-          </div>
-        )}
-        {showBeginsIn && (
-          <div className={cellClass}>
-            <ArrowRightIcon className="w-5 h-5 text-blue-400 flex-shrink-0" />
-            <span className="whitespace-nowrap text-blue-400">{getTimeUntilStart(startTime)}</span>
+        {(status === 'live' || status === 'upcoming') && (
+          <div className={`${cellClass} justify-end pr-2`}>
+            {status === 'live' ? (
+              <BoltIcon className="w-5 h-5 text-yellow-400 flex-shrink-0" />
+            ) : (
+              <ArrowRightIcon className="w-5 h-5 text-blue-400 flex-shrink-0" />
+            )}
+            <span className={`whitespace-nowrap ${status === 'live' ? 'text-yellow-400' : 'text-blue-400'}`}>
+              {status === 'live' ? getTimeRemaining(endTime) : getTimeUntilStart(startTime)}
+            </span>
           </div>
         )}
       </div>
@@ -244,7 +245,7 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
         <div className="bg-gray-800 rounded-lg overflow-hidden">
           {renderTableHeader()}
           {!isSorting && sortedClasses.map((c, i) => 
-            renderClassRow(c, 'other', i === sortedClasses.length - 1)
+            renderClassRow(c, 'catalog', i === sortedClasses.length - 1)
           )}
         </div>
       </div>
@@ -253,15 +254,12 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
 
   // Extract subjects once and memoize
   const subjects = useMemo(() => {
-    console.time('subjects');
     const subjectSet = new Set<string>();
     for (const c of classes) {
       const match = c.courseCode.match(/^([A-Z]+)/);
       if (match) subjectSet.add(match[0]);
     }
-    const result = Array.from(subjectSet).sort();
-    console.timeEnd('subjects');
-    return result;
+    return Array.from(subjectSet).sort();
   }, [classes]);
 
   // Simple string matching for filtering subjects
@@ -330,7 +328,7 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
   return (
     <div className="space-y-8">
       <div className="flex justify-between items-center border-b border-gray-700 pb-4">
-        <div>
+        <div className="w-full">
           <h1 className="text-4xl font-bold text-blue-400 flex items-center gap-3">
             <Image
               src="/ucsd_logo.webp"
@@ -341,62 +339,36 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
             />
             <span className="text-4xl text-white font-bold">Live Lectures</span>
           </h1>
-          <div className="flex items-center gap-4 mt-2">
-            <div className="w-72">
-              <Combobox value={selectedSubject} onChange={handleSubjectChange}>
-                <div className="relative">
-                  <div className="relative w-full cursor-default overflow-hidden rounded-lg bg-gray-700 text-left border border-gray-600 focus-within:ring-2 focus-within:ring-blue-500">
-                    <Combobox.Input
-                      className="w-full border-none py-2 pl-3 pr-10 text-sm leading-5 text-gray-200 bg-transparent focus:outline-none"
-                      displayValue={(subject: string) => subject || 'All Subjects'}
-                      onChange={handleInputChange}
-                      value={inputValue}
-                      placeholder="Search subjects..."
-                    />
-                    <Combobox.Button className="absolute inset-y-0 right-0 flex items-center pr-2">
-                      <ChevronUpDownIcon
-                        className="h-5 w-5 text-gray-400"
-                        aria-hidden="true"
+          <div className="flex items-center justify-between gap-4 mt-2">
+            <div className="flex items-center gap-4">
+              <div className="w-72">
+                <Combobox value={selectedSubject} onChange={handleSubjectChange}>
+                  <div className="relative">
+                    <div className="relative w-full cursor-default overflow-hidden rounded-lg bg-gray-700 text-left border border-gray-600 focus-within:ring-2 focus-within:ring-blue-500">
+                      <Combobox.Input
+                        className="w-full border-none py-2 pl-3 pr-10 text-sm leading-5 text-gray-200 bg-transparent focus:outline-none"
+                        displayValue={(subject: string) => subject || 'All Subjects'}
+                        onChange={handleInputChange}
+                        value={inputValue}
+                        placeholder="Search subjects..."
                       />
-                    </Combobox.Button>
-                  </div>
-                  <Transition
-                    as={Fragment}
-                    leave="transition ease-in duration-100"
-                    leaveFrom="opacity-100"
-                    leaveTo="opacity-0"
-                    afterLeave={() => setInputValue('')}
-                  >
-                    <Combobox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-gray-700 py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm z-10">
-                      <Combobox.Option
-                        value=""
-                        className={({ active }) =>
-                          `relative cursor-default select-none py-2 pl-10 pr-4 ${
-                            active ? 'bg-blue-500 text-white' : 'text-gray-200'
-                          }`
-                        }
-                      >
-                        {({ selected, active }) => (
-                          <>
-                            <span className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}>
-                              All Subjects
-                            </span>
-                            {selected ? (
-                              <span
-                                className={`absolute inset-y-0 left-0 flex items-center pl-3 ${
-                                  active ? 'text-white' : 'text-blue-500'
-                                }`}
-                              >
-                                <CheckIcon className="h-5 w-5" aria-hidden="true" />
-                              </span>
-                            ) : null}
-                          </>
-                        )}
-                      </Combobox.Option>
-                      {filteredSubjects.map((subject) => (
+                      <Combobox.Button className="absolute inset-y-0 right-0 flex items-center pr-2">
+                        <ChevronUpDownIcon
+                          className="h-5 w-5 text-gray-400"
+                          aria-hidden="true"
+                        />
+                      </Combobox.Button>
+                    </div>
+                    <Transition
+                      as={Fragment}
+                      leave="transition ease-in duration-100"
+                      leaveFrom="opacity-100"
+                      leaveTo="opacity-0"
+                      afterLeave={() => setInputValue('')}
+                    >
+                      <Combobox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-gray-700 py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm z-10">
                         <Combobox.Option
-                          key={subject}
-                          value={subject}
+                          value=""
                           className={({ active }) =>
                             `relative cursor-default select-none py-2 pl-10 pr-4 ${
                               active ? 'bg-blue-500 text-white' : 'text-gray-200'
@@ -406,7 +378,7 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
                           {({ selected, active }) => (
                             <>
                               <span className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}>
-                                {subject}
+                                All Subjects
                               </span>
                               {selected ? (
                                 <span
@@ -420,27 +392,55 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
                             </>
                           )}
                         </Combobox.Option>
-                      ))}
-                    </Combobox.Options>
-                  </Transition>
-                </div>
-              </Combobox>
+                        {filteredSubjects.map((subject) => (
+                          <Combobox.Option
+                            key={subject}
+                            value={subject}
+                            className={({ active }) =>
+                              `relative cursor-default select-none py-2 pl-10 pr-4 ${
+                                active ? 'bg-blue-500 text-white' : 'text-gray-200'
+                              }`
+                            }
+                          >
+                            {({ selected, active }) => (
+                              <>
+                                <span className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}>
+                                  {subject}
+                                </span>
+                                {selected ? (
+                                  <span
+                                    className={`absolute inset-y-0 left-0 flex items-center pl-3 ${
+                                      active ? 'text-white' : 'text-blue-500'
+                                    }`}
+                                  >
+                                    <CheckIcon className="h-5 w-5" aria-hidden="true" />
+                                  </span>
+                                ) : null}
+                              </>
+                            )}
+                          </Combobox.Option>
+                        ))}
+                      </Combobox.Options>
+                    </Transition>
+                  </div>
+                </Combobox>
+              </div>
+              <button
+                onClick={() => setSortByRecent(!sortByRecent)}
+                className="flex items-center gap-2 px-3 py-2 text-sm text-gray-300 hover:text-white bg-gray-700 rounded-md border border-gray-600 hover:border-gray-500 transition-colors"
+                title={sortByRecent ? "Sort by time remaining" : "Sort by recently started"}
+              >
+                <ArrowsUpDownIcon className="h-4 w-4" />
+                {sortByRecent ? "Recently Started" : "Time Remaining"}
+              </button>
+              <p className="text-gray-400">
+                Showing {filteredLiveClasses.length} live lectures
+                {selectedSubject && ` in ${selectedSubject}`}
+              </p>
             </div>
-            <button
-              onClick={() => setSortByRecent(!sortByRecent)}
-              className="flex items-center gap-2 px-3 py-2 text-sm text-gray-300 hover:text-white bg-gray-700 rounded-md border border-gray-600 hover:border-gray-500 transition-colors"
-              title={sortByRecent ? "Sort by time remaining" : "Sort by recently started"}
-            >
-              <ArrowsUpDownIcon className="h-4 w-4" />
-              {sortByRecent ? "Recently Started" : "Time Remaining"}
-            </button>
-            <p className="text-gray-400">
-              Showing {filteredLiveClasses.length} live lectures
-              {selectedSubject && ` in ${selectedSubject}`}
-            </p>
+            <div className="text-xl font-mono text-gray-300 ml-auto">Current Time: {currentTime} PST</div>
           </div>
         </div>
-        <div className="text-xl font-mono text-gray-300">Current Time: {currentTime} PST</div>
       </div>
 
       {filteredLiveClasses.length > 0 && (

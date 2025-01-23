@@ -36,7 +36,6 @@ export const parseTime = (timeStr: string): Date => {
   date.setSeconds(0);
   date.setMilliseconds(0);
   
-  console.log(`Parsed "${timeStr}" to:`, date.toLocaleTimeString());
   return date;
 };
 
@@ -45,14 +44,7 @@ export const isClassLive = (startTime: string, endTime: string): boolean => {
   const start = parseTime(startTime);
   const end = parseTime(endTime);
   
-  console.log('Class time check:');
-  console.log('Current:', now.toLocaleTimeString());
-  console.log('Start:', start.toLocaleTimeString());
-  console.log('End:', end.toLocaleTimeString());
-  
-  const isLive = now >= start && now <= end;
-  console.log('Is live:', isLive);
-  return isLive;
+  return now >= start && now <= end;
 };
 
 export const isClassUpcoming = (startTime: string, endTime: string): boolean => {
@@ -62,14 +54,7 @@ export const isClassUpcoming = (startTime: string, endTime: string): boolean => 
   // Class is upcoming if it starts within the next 2 hours
   const twoHoursFromNow = new Date(now.getTime() + 2 * 60 * 60 * 1000);
   
-  console.log('Upcoming check:');
-  console.log('Current:', now.toLocaleTimeString());
-  console.log('Start:', start.toLocaleTimeString());
-  console.log('Two hours from now:', twoHoursFromNow.toLocaleTimeString());
-  
-  const isUpcoming = start > now && start <= twoHoursFromNow;
-  console.log('Is upcoming:', isUpcoming);
-  return isUpcoming;
+  return start > now && start <= twoHoursFromNow;
 };
 
 // Format time like "6:00p" to "6:00 PM"

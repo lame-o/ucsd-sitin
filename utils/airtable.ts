@@ -90,7 +90,6 @@ export const fetchRecords = async () => {
 
       // Calculate the correct seat limit
       let seatLimit = parseInt(lectureSection['Seat Limit']) || 0;
-      console.log(`Initial seat limit for ${lectureSection['Subject Code']} ${course['Course Number']}: ${seatLimit}`);
       
       // If seat limit is 0, look for associated discussion sections
       if (seatLimit === 0) {
@@ -104,17 +103,13 @@ export const fetchRecords = async () => {
             section['Subject Code'] === lectureSection['Subject Code'] &&
             sectionCourseLink === courseLink;
         });
-
-        console.log(`Found ${discussionSections.length} discussion sections for ${lectureSection['Subject Code']} ${course['Course Number']}`);
         
         if (discussionSections.length > 0) {
           // Sum up the seat limits from all discussion sections
           seatLimit = discussionSections.reduce((total, section) => {
             const sectionLimit = parseInt(section['Seat Limit']) || 0;
-            console.log(`Discussion section limit: ${sectionLimit}`);
             return total + sectionLimit;
           }, 0);
-          console.log(`Calculated total seat limit for ${lectureSection['Subject Code']} ${course['Course Number']}: ${seatLimit}`);
         }
       }
       
