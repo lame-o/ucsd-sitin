@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Fragment, useMemo, useCallback } from 'react';
 import { 
   isClassLive, 
   isClassUpcoming, 
@@ -15,9 +15,12 @@ import {
   MapPinIcon,
   UserGroupIcon,
   UserIcon,
-  ArrowRightIcon
+  ArrowRightIcon,
+  ArrowsUpDownIcon
 } from '@heroicons/react/24/outline';
 import { BoltIcon } from '@heroicons/react/24/solid';
+import { Combobox, Transition } from '@headlessui/react';
+import { ChevronUpDownIcon, CheckIcon } from '@heroicons/react/24/outline';
 
 interface ClassItem {
   id: string
@@ -43,6 +46,10 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
   const [currentTime, setCurrentTime] = useState(formatPSTTime());
   const [sortedClasses, setSortedClasses] = useState<ClassItem[]>([]);
   const [isSorting, setIsSorting] = useState(false);
+  const [selectedSubject, setSelectedSubject] = useState<string>('');
+  const [inputValue, setInputValue] = useState('');
+  const [query, setQuery] = useState('');
+  const [sortByRecent, setSortByRecent] = useState(false);
   const [, forceUpdate] = useState({});
 
   // Update time every minute
@@ -228,8 +235,8 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
       <div className="space-y-8">
         <div className="flex justify-between items-center border-b border-gray-700 pb-4">
           <div>
-            <h1 className="text-4xl font-bold text-gray-100">Course Catalog</h1>
-            <p className="text-gray-400 mt-2">All classes (not live or upcoming)</p>
+            <h1 className="text-4xl font-bold text-gray-100">Course Catalog (...give it a second)</h1>
+            <p className="text-gray-400 mt-2">Showing {classes.length} total classes</p>
           </div>
         </div>
 
@@ -243,22 +250,195 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
     );
   }
 
+  // Extract subjects once and memoize
+  const subjects = useMemo(() => {
+    console.time('subjects');
+    const subjectSet = new Set<string>();
+    for (const c of classes) {
+      const match = c.courseCode.match(/^([A-Z]+)/);
+      if (match) subjectSet.add(match[0]);
+    }
+    const result = Array.from(subjectSet).sort();
+    console.timeEnd('subjects');
+    return result;
+  }, [classes]);
+
+  // Simple string matching for filtering subjects
+  const filteredSubjects = useMemo(() => {
+    if (!inputValue.trim()) return subjects;
+    const searchValue = inputValue.toLowerCase();
+    return subjects.filter(subject => 
+      subject.toLowerCase().startsWith(searchValue)
+    );
+  }, [subjects, inputValue]);
+
+  // Debounced query update
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setQuery(inputValue);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [inputValue]);
+
+  // Handle input change immediately for responsiveness
+  const handleInputChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    setInputValue(event.target.value);
+  }, []);
+
+  // Get minutes elapsed since class started
+  const getMinutesElapsed = useCallback((startTime: string) => {
+    const now = new Date();
+    const startDate = parseTime(startTime);
+    return Math.floor((now.getTime() - startDate.getTime()) / 60000);
+  }, []);
+
+  // Memoize live classes filtering
+  const filteredLiveClasses = useMemo(() => {
+    let filtered = selectedSubject
+      ? liveClasses.filter(c => c.courseCode.startsWith(selectedSubject))
+      : liveClasses;
+
+    // Sort based on toggle
+    filtered = [...filtered].sort((a, b) => {
+      if (sortByRecent) {
+        // Sort by most recently started (least minutes elapsed)
+        const [startTimeA] = a.time.split('-');
+        const [startTimeB] = b.time.split('-');
+        return getMinutesElapsed(startTimeA) - getMinutesElapsed(startTimeB);
+      } else {
+        // Sort by most time remaining (original sort)
+        const [, endTimeA] = a.time.split('-');
+        const [, endTimeB] = b.time.split('-');
+        return getRemainingMinutes(endTimeB) - getRemainingMinutes(endTimeA);
+      }
+    });
+
+    return filtered;
+  }, [liveClasses, selectedSubject, sortByRecent, getMinutesElapsed]);
+
+  // Memoize handlers
+  const handleQueryChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    setQuery(event.target.value);
+  }, []);
+
+  const handleSubjectChange = useCallback((value: string) => {
+    setSelectedSubject(value);
+    setInputValue('');
+  }, []);
+
   return (
     <div className="space-y-8">
       <div className="flex justify-between items-center border-b border-gray-700 pb-4">
         <div>
           <h1 className="text-4xl font-bold text-blue-400">UCSD Live Lectures</h1>
-          <p className="text-gray-400 mt-2">Showing {classes.length} available lectures</p>
+          <div className="flex items-center gap-4 mt-2">
+            <div className="w-72">
+              <Combobox value={selectedSubject} onChange={handleSubjectChange}>
+                <div className="relative">
+                  <div className="relative w-full cursor-default overflow-hidden rounded-lg bg-gray-700 text-left border border-gray-600 focus-within:ring-2 focus-within:ring-blue-500">
+                    <Combobox.Input
+                      className="w-full border-none py-2 pl-3 pr-10 text-sm leading-5 text-gray-200 bg-transparent focus:outline-none"
+                      displayValue={(subject: string) => subject || 'All Subjects'}
+                      onChange={handleInputChange}
+                      value={inputValue}
+                      placeholder="Search subjects..."
+                    />
+                    <Combobox.Button className="absolute inset-y-0 right-0 flex items-center pr-2">
+                      <ChevronUpDownIcon
+                        className="h-5 w-5 text-gray-400"
+                        aria-hidden="true"
+                      />
+                    </Combobox.Button>
+                  </div>
+                  <Transition
+                    as={Fragment}
+                    leave="transition ease-in duration-100"
+                    leaveFrom="opacity-100"
+                    leaveTo="opacity-0"
+                    afterLeave={() => setInputValue('')}
+                  >
+                    <Combobox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-gray-700 py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm z-10">
+                      <Combobox.Option
+                        value=""
+                        className={({ active }) =>
+                          `relative cursor-default select-none py-2 pl-10 pr-4 ${
+                            active ? 'bg-blue-500 text-white' : 'text-gray-200'
+                          }`
+                        }
+                      >
+                        {({ selected, active }) => (
+                          <>
+                            <span className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}>
+                              All Subjects
+                            </span>
+                            {selected ? (
+                              <span
+                                className={`absolute inset-y-0 left-0 flex items-center pl-3 ${
+                                  active ? 'text-white' : 'text-blue-500'
+                                }`}
+                              >
+                                <CheckIcon className="h-5 w-5" aria-hidden="true" />
+                              </span>
+                            ) : null}
+                          </>
+                        )}
+                      </Combobox.Option>
+                      {filteredSubjects.map((subject) => (
+                        <Combobox.Option
+                          key={subject}
+                          value={subject}
+                          className={({ active }) =>
+                            `relative cursor-default select-none py-2 pl-10 pr-4 ${
+                              active ? 'bg-blue-500 text-white' : 'text-gray-200'
+                            }`
+                          }
+                        >
+                          {({ selected, active }) => (
+                            <>
+                              <span className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}>
+                                {subject}
+                              </span>
+                              {selected ? (
+                                <span
+                                  className={`absolute inset-y-0 left-0 flex items-center pl-3 ${
+                                    active ? 'text-white' : 'text-blue-500'
+                                  }`}
+                                >
+                                  <CheckIcon className="h-5 w-5" aria-hidden="true" />
+                                </span>
+                              ) : null}
+                            </>
+                          )}
+                        </Combobox.Option>
+                      ))}
+                    </Combobox.Options>
+                  </Transition>
+                </div>
+              </Combobox>
+            </div>
+            <button
+              onClick={() => setSortByRecent(!sortByRecent)}
+              className="flex items-center gap-2 px-3 py-2 text-sm text-gray-300 hover:text-white bg-gray-700 rounded-md border border-gray-600 hover:border-gray-500 transition-colors"
+              title={sortByRecent ? "Sort by time remaining" : "Sort by recently started"}
+            >
+              <ArrowsUpDownIcon className="h-4 w-4" />
+              {sortByRecent ? "Recently Started" : "Time Remaining"}
+            </button>
+            <p className="text-gray-400">
+              Showing {filteredLiveClasses.length} live lectures
+              {selectedSubject && ` in ${selectedSubject}`}
+            </p>
+          </div>
         </div>
         <div className="text-xl font-mono text-gray-300">Current Time: {currentTime} PST</div>
       </div>
 
-      {liveClasses.length > 0 && (
+      {filteredLiveClasses.length > 0 && (
         <div>
           <div className="bg-gray-800 rounded-lg overflow-hidden shadow-[0_0_15px_-3px_rgba(59,130,246,0.4)] relative">
-            {renderTableHeader(true, false)}
-            {liveClasses.map((c, i) => 
-              renderClassRow(c, 'live', i === liveClasses.length - 1)
+            {renderTableHeader(true)}
+            {filteredLiveClasses.map((c, i) => 
+              renderClassRow(c, 'live', i === filteredLiveClasses.length - 1)
             )}
           </div>
         </div>

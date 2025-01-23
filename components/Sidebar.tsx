@@ -2,8 +2,9 @@
 
 import { useEffect, useRef } from "react"
 import { gsap } from "gsap"
-import { PlayCircle, BookOpen, Info, GraduationCap } from "lucide-react"
+import { PlayCircle, BookOpen, Info } from "lucide-react"
 import { cn } from "@/lib/utils"
+import Image from 'next/image';
 
 const tabs = [
   { name: "Live Lectures", icon: PlayCircle },
@@ -36,8 +37,14 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
       <div className="space-y-4 py-4">
         <div className="px-6 py-2">
           <div className="flex items-center gap-2">
-            <GraduationCap className="h-6 w-6 text-primary" />
-            <h2 className="text-lg font-semibold tracking-tight">UCSD Classes</h2>
+            <Image
+              src="/trident.webp"
+              alt="Trident"
+              width={24}
+              height={24}
+              className="text-primary"
+            />
+            <h2 className="text-lg font-semibold tracking-tight">UCSD-SitIn</h2>
           </div>
         </div>
         <div className="px-3">

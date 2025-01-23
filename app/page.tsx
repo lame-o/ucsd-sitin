@@ -110,11 +110,12 @@ export default function Home() {
                 <div className="space-y-4">
                   <h2 className="text-2xl font-bold text-gray-100">How It Works</h2>
                   <ul className="list-disc list-inside space-y-3 text-gray-300">
-                    <li>View live lectures happening right now</li>
+                    <li>View live lectures happening right now (NO DISCUSSIONS/LABS on purpose)</li>
                     <li>See upcoming lectures starting soon</li>
                     <li>Browse the complete course catalog</li>
-                    <li>Find classroom locations and available seats</li>
+                    <li>Find classroom locations and seat limits (don't intrude on a small class)</li>
                     <li>Track remaining time for ongoing lectures</li>
+                    <li>If seat limit says 0, that comes from UCSD schedule typos and doesnt mean there isnt class</li>
                   </ul>
                 </div>
 
@@ -130,7 +131,7 @@ export default function Home() {
 
                 <div className="mt-8 text-sm text-gray-400">
                   <p>
-                    Note: This tool is intended for educational purposes. Always respect class policies and professor preferences regarding sit-ins.
+                    Note: This tool is quite literally intended for educational purposes ONLY. Always respect class policies and professor preferences regarding sit-ins.
                   </p>
                 </div>
               </div>
