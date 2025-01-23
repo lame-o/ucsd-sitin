@@ -47,6 +47,7 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
   const [isSorting, setIsSorting] = useState(false);
   const [selectedSubject, setSelectedSubject] = useState<string>('');
   const [selectedUpcomingSubject, setSelectedUpcomingSubject] = useState<string>('');
+  const [selectedTimeFrame, setSelectedTimeFrame] = useState<number>(60); // Default 1 hour (60 minutes)
   const [sortByRecent, setSortByRecent] = useState(false);
   const [, forceUpdate] = useState({});
 
@@ -132,12 +133,16 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
       return getRemainingMinutes(endTimeB) - getRemainingMinutes(endTimeA);
     });
 
-  const upcomingClasses = classes
-    .filter(c => {
-      const [startTime, endTime] = c.time.split('-');
-      return isClassUpcoming(startTime, endTime);
-    })
-    .sort((a, b) => getStartTime(a.time) - getStartTime(b.time));
+  const upcomingClasses = useMemo(() => {
+    return classes
+      .filter((c) => {
+        const [startTime] = c.time.split('-');
+        const startDate = parseTime(startTime);
+        const minutesUntilStart = (startDate.getTime() - new Date().getTime()) / 60000;
+        return minutesUntilStart > 0 && minutesUntilStart <= selectedTimeFrame;
+      })
+      .sort((a, b) => getStartTime(a.time) - getStartTime(b.time)); // Sort by start time
+  }, [classes, parseTime, selectedTimeFrame]);
 
   const getTimeUntilStart = (startTime: string) => {
     const now = new Date();
@@ -547,11 +552,23 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
                     )}
                   </select>
                 </div>
+                <div>
+                  <select
+                    value={selectedTimeFrame}
+                    onChange={(e) => setSelectedTimeFrame(Number(e.target.value))}
+                    className="text-sm text-gray-300 hover:text-white bg-gray-700 rounded-md border border-gray-600 hover:border-gray-500 transition-colors px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value={30}>Next 30m</option>
+                    <option value={60}>Next 1h</option>
+                    <option value={120}>Next 2h</option>
+                  </select>
+                </div>
                 <p className="text-gray-400">
                   Showing {filteredUpcomingClasses.length} upcoming lectures
                   {selectedUpcomingSubject 
                     ? ` in ${selectedUpcomingSubject}` 
                     : ` across ${upcomingSubjectsCount} subjects`}
+                  {` starting within ${selectedTimeFrame === 60 ? '1h' : selectedTimeFrame === 30 ? '30m' : '2h'}`}
                 </p>
               </div>
             </div>
