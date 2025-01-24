@@ -343,7 +343,7 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
   };
 
   const renderTableHeader = (mode: 'live' | 'upcoming' | 'catalog') => (
-    <div className={`grid ${mode === 'live' ? 'grid-cols-[2fr,1.5fr,0.7fr,0.7fr,0.7fr,1fr,0.8fr]' : mode === 'upcoming' ? 'grid-cols-[2fr,1.5fr,0.7fr,0.7fr,0.7fr,1fr,0.8fr]' : 'grid-cols-[2fr,1.5fr,0.7fr,0.7fr,0.7fr,0.7fr,1fr]'} gap-x-2 px-6 py-3 bg-gray-700 text-xs font-medium ${mode === 'live' ? 'text-gray-100' : 'text-gray-400'} uppercase tracking-wider`}>
+    <div className={`grid ${mode === 'live' ? 'grid-cols-[2fr,1.5fr,0.7fr,0.7fr,0.5fr,1fr,0.7fr]' : mode === 'upcoming' ? 'grid-cols-[2fr,1.5fr,0.7fr,0.7fr,0.5fr,1fr,0.7fr]' : 'grid-cols-[2fr,1.5fr,0.7fr,0.7fr,0.5fr,0.5fr,1fr]'} gap-x-2 px-6 py-3 bg-gray-700 text-xs font-medium ${mode === 'live' ? 'text-gray-100' : 'text-gray-400'} uppercase tracking-wider`}>
       <div className="pl-6">Class</div>
       <div className="pl-10">Professor</div>
       <div className="pl-2">Building</div>
@@ -380,7 +380,7 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
     return (
       <div
         key={classItem.id}
-        className={`grid ${status === 'live' ? 'grid-cols-[2fr,1.5fr,0.7fr,0.7fr,0.7fr,1fr,0.8fr]' : status === 'upcoming' ? 'grid-cols-[2fr,1.5fr,0.7fr,0.7fr,0.7fr,1fr,0.8fr]' : 'grid-cols-[2fr,1.5fr,0.7fr,0.7fr,0.7fr,0.7fr,1fr]'} gap-x-2 px-6 py-4 text-sm hover:bg-gray-700/50 ${!isLast && 'border-b border-gray-700'} min-h-[4rem]`}
+        className={`grid ${status === 'live' ? 'grid-cols-[2fr,1.5fr,0.7fr,0.7fr,0.5fr,1fr,0.7fr]' : status === 'upcoming' ? 'grid-cols-[2fr,1.5fr,0.7fr,0.7fr,0.5fr,1fr,0.7fr]' : 'grid-cols-[2fr,1.5fr,0.7fr,0.7fr,0.5fr,0.5fr,1fr]'} gap-x-2 px-6 py-4 text-sm hover:bg-gray-700/50 ${!isLast && 'border-b border-gray-700'} min-h-[4rem]`}
       >
         <div className={cellClass}>
           <div className="flex items-center gap-3">
