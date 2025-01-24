@@ -534,7 +534,7 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
                 <select
                   value={selectedSubject}
                   onChange={(e) => setSelectedSubject(e.target.value)}
-                  className="w-full text-sm text-gray-300 bg-gray-700 rounded-md border border-gray-600 hover:border-gray-500 transition-colors px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-[0_0_15px_-3px_rgba(0,0,0)]"
+                  className="w-full text-sm text-gray-300 bg-gray-700 rounded-md border border-gray-600 hover:border-yellow-500 transition-colors px-3 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500 shadow-[0_0_15px_-3px_rgba(0,0,0)]"
                 >
                   <option value="">All Subjects</option>
                   <option disabled className="border-t border-gray-600 text-gray-500">
@@ -559,7 +559,7 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
               </div>
               <button
                 onClick={() => setSortByRecent(!sortByRecent)}
-                className="flex items-center gap-2 px-3 py-2 text-sm text-gray-300 bg-gray-700 rounded-md border border-gray-600 hover:border-gray-500 transition-colors shadow-[0_0_15px_-3px_rgba(0,0,0)]"
+                className="flex items-center gap-2 px-3 py-2 text-sm text-gray-300 bg-gray-700 rounded-md border border-gray-600 hover:border-yellow-500 transition-colors shadow-[0_0_15px_-3px_rgba(0,0,0)]"
                 title={sortByRecent ? "Sort by time remaining" : "Sort by recently started"}
               >
                 <ArrowsUpDownIcon className="h-4 w-4" />
@@ -567,7 +567,7 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
               </button>
               <p className="text-gray-400">
                 {filteredLiveClasses.length === 0 ? (
-                  'No live lectures'
+                  <>No live lectures{selectedSubject ? <> in <span className="text-white">{selectedSubject}</span></> : ''}</>
                 ) : (
                   <>
                     Showing <span className="text-white">{filteredLiveClasses.length}</span> live lectures
@@ -584,16 +584,24 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
         </div>
       </div>
 
-      {filteredLiveClasses.length > 0 && (
-        <div>
-          <div className="bg-gray-800 rounded-lg overflow-hidden shadow-[0_0_15px_-3px_rgba(0,0,0)] relative">
-            {renderTableHeader(true)}
-            {filteredLiveClasses.map((c, i) => 
-              renderClassRow(c, 'live', i === filteredLiveClasses.length - 1)
-            )}
-          </div>
+      <div>
+        <div className="mt-4">
+          {filteredLiveClasses.length > 0 ? (
+            <div className="bg-gray-800 rounded-lg overflow-hidden shadow-[0_0_15px_-3px_rgba(0,0,0)] relative">
+              {renderTableHeader(true)}
+              {filteredLiveClasses.map((c, i) => 
+                renderClassRow(c, 'live', i === filteredLiveClasses.length - 1)
+              )}
+            </div>
+          ) : (
+            <div className="mt-8">
+              <div className="text-center py-8 text-gray-400">
+                Nothing live right now! Check back later 🎓
+              </div>
+            </div>
+          )}
         </div>
-      )}
+      </div>
 
       <div>
         <div className="border-b border-gray-700 pb-4">
@@ -687,7 +695,7 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
         ) : (
           <div className="mt-8">
             <div className="text-center py-8 text-gray-400">
-              No classes starting in the selected time frame
+              You got some free time! 🎉
             </div>
           </div>
         )}
