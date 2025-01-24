@@ -303,6 +303,20 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
       .sort((a, b) => getStartTime(a.time) - getStartTime(b.time));
   }, [uniqueClasses, selectedTimeFrame, currentTime]);
 
+  // Count unique subjects in filtered classes
+  const catalogSubjectsCount = uniqueClasses
+    .filter(c => {
+      if (selectedCatalogSubject && !c.courseCode.startsWith(selectedCatalogSubject)) return false;
+      if (selectedCatalogDay && !c.days.includes(selectedCatalogDay)) return false;
+      return true;
+    })
+    .reduce((subjects, c) => {
+      const match = c.courseCode.match(/^([A-Z]+)/);
+      if (match) subjects.add(match[0]);
+      return subjects;
+    }, new Set<string>())
+    .size;
+
   // Get count of unique subjects in live lectures
   const liveSubjectsCount = useMemo(() => {
     const subjectSet = new Set<string>();
@@ -430,17 +444,6 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
     );
   };
 
-  // Memoized catalog subjects count
-  const catalogSubjectsCount = useMemo(() => {
-    if (mode !== 'catalog') return 0;
-    const subjectSet = new Set<string>();
-    sortedClasses.forEach(c => {
-      const match = c.courseCode.match(/^([A-Z]+)/);
-      if (match) subjectSet.add(match[0]);
-    });
-    return subjectSet.size;
-  }, [mode, sortedClasses]);
-
   // Memoized filtered catalog classes
   const filteredCatalogClasses = useMemo(() => {
     if (mode !== 'catalog') return [];
@@ -565,9 +568,7 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
                 {selectedCatalogSubject 
                   ? ` in `
                   : ` across `}
-                <span className="text-white">
-                  {selectedCatalogSubject || `${catalogSubjectsCount} subjects`}
-                </span>
+                <span className="text-white">{selectedCatalogSubject || catalogSubjectsCount}</span> subjects{selectedCatalogDay && <> on <span className="text-white">{selectedCatalogDay === 'M' ? 'Monday' : selectedCatalogDay === 'Tu' ? 'Tuesday' : selectedCatalogDay === 'W' ? 'Wednesday' : selectedCatalogDay === 'Th' ? 'Thursday' : selectedCatalogDay === 'F' ? 'Friday' : selectedCatalogDay}</span></>}
               </p>
             </div>
           </div>
@@ -605,7 +606,7 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
               height={175}
               className="-mt-1.5 h-175 w-175"
             />
-            <span className="text-4xl text-white font-bold">Live Lectures</span>
+            <span className="text-4xl text-white font-bold">Live Lectures 🦝</span>
           </h1>
           <div className="flex items-center justify-between gap-4 mt-2">
             <div className="flex items-center gap-4">
@@ -646,19 +647,19 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
               </button>
               <p className="text-gray-400">
                 {filteredLiveClasses.length === 0 ? (
-                  <>No live lectures{selectedSubject ? <> in <span className="text-white">{selectedSubject}</span></> : ''}</>
+                  <>No live lectures{selectedSubject ? <> in <span className="text-white">{selectedSubject}</span> 🦝</> : ''}</>
                 ) : (
                   <>
                     Showing <span className="text-white">{filteredLiveClasses.length}</span> live lectures
                     {selectedSubject 
-                      ? <> in <span className="text-white">{selectedSubject}</span></>
+                      ? <> in <span className="text-white">{selectedSubject}</span> 🦝</>
                       : <> across <span className="text-white">{liveSubjectsCount}</span> subjects</>
                     }
                   </>
                 )}
               </p>
             </div>
-            <div className="text-xl font-mono text-gray-300 ml-auto">Current Time: {currentTime} PST</div>
+            <div className="text-xl font-mono text-white-300 ml-auto">Current Time: {currentTime} PST</div>
           </div>
         </div>
       </div>
