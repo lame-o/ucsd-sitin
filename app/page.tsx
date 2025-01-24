@@ -35,6 +35,7 @@ export default function Home() {
       
       if (error) {
         setError(error)
+        console.error(error)
       } else {
         setClasses(records as ClassItem[])
       }
@@ -98,7 +99,7 @@ export default function Home() {
                   <div className="flex justify-between items-center border-b border-gray-700 pb-4">
                     <div>
                       <h1 className="text-4xl font-bold text-white">About UCSD-SitIn</h1>
-                      <p className="text-gray-400 mt-2">Built by Triton 🐻 for literally educational purposes</p>
+                      <p className="text-gray-400 mt-2">Built by Triton &apos;s for literally educational purposes</p>
                     </div>
                   </div>
 
@@ -107,8 +108,8 @@ export default function Home() {
                       <p className="text-gray-300 text-lg leading-relaxed">
                         As a UCSD student, I always wanted a way to explore 
                         different classes and sit in on subjects I never got the chance to with my major.<br /><br />
-                        That's why I built UCSD-SitIn, to make it super easy to find and attend available lectures 
-                        across campus. Whether you're trying to catch up on missed content, explore potential majors, or just learn 
+                        That&apos;s why I built UCSD-SitIn, to make it super easy to find and attend available lectures 
+                        across campus. Whether you&apos;re trying to catch up on missed content, explore potential majors, or just learn 
                         something new, this tool helps you find the right lecture at the right time.
                       </p>
                     </div>
@@ -181,7 +182,7 @@ export default function Home() {
                           </li>
                           <li className="flex items-start gap-2">
                             <span className="text-blue-400">•</span>
-                            <span>Don't take seats from enrolled students, especially in smaller classes</span>
+                            <span>Don&apos;t take seats from enrolled students, especially in smaller classes</span>
                           </li>
                           <li className="flex items-start gap-2">
                             <span className="text-blue-400">•</span>
@@ -223,13 +224,13 @@ export default function Home() {
                       </h2>
                       <div className="bg-gray-700/50 rounded-lg p-6">
                         <p className="text-gray-300 mb-4">
-                          Hey! I'm <a href="https://github.com/lame-o" className="text-blue-400 hover:underline">Liam</a> and this app is built on top of my other project 
+                          Hey! I&apos;m <a href="https://github.com/lame-o" className="text-blue-400 hover:underline">Liam</a> and this app is built on top of my other project 
                           called <a href="https://github.com/lame-o/schedule-surfer" className="text-blue-400 hover:underline">ScheduleSurfer</a>. I wrote it as a Node.js / Playwright scraper that pulls 
-                          data from UCSD's schedule of classes and structures it in a way that's actually usable. The base config is set to pull all data (which is a lot) so use filters when needed.
+                          data from UCSD&apos;s schedule of classes and structures it in a way that&apos;s actually usable. The base config is set to pull all data (which is a lot) so use filters when needed.
                         </p>
                         <p className="text-gray-300 mb-4">
                           The data goes to a <a href="https://airtable.com/app16yB8bHox0EeCj/shrLJUoHNtlYwYf5X" className="text-blue-400 hover:underline">Airtable base</a> with 
-                          some custom views and filters. Check the repo branches if you want to see how I'm querying different stuff.
+                          some custom views and filters. Check the repo branches if you want to see how I&apos;m querying different stuff.
                         </p>
                         <p className="text-gray-300">
                           UCSD-SitIn is basically a real-time interface for that data - it watches for active lectures and updates live. 

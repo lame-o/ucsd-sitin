@@ -1,8 +1,7 @@
 'use client';
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { 
-  isClassLive, 
-  isClassUpcoming, 
+  isClassLive,
   parseTime, 
   formatPSTTime, 
   formatTime, 
@@ -65,7 +64,6 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
   const [selectedTimeFrame, setSelectedTimeFrame] = useState<number>(60); // Default 1 hour (60 minutes)
   const [selectedCatalogSubject, setSelectedCatalogSubject] = useState<string>('');
   const [sortByRecent, setSortByRecent] = useState(false);
-  const [, forceUpdate] = useState({});
 
   // Extract all unique subjects and create subject descriptions
   const { subjects, groupedSubjects, subjectDescriptions } = useMemo(() => {
@@ -204,7 +202,6 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(formatPSTTime());
-      forceUpdate({}); // Force update to refresh time remaining
     }, 60000);
     return () => clearInterval(timer);
   }, []);
@@ -276,11 +273,17 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
       })
       .filter(c => !selectedSubject || c.courseCode.startsWith(selectedSubject))
       .sort((a, b) => {
-        const [, endTimeA] = a.time.split('-');
-        const [, endTimeB] = b.time.split('-');
-        return getRemainingMinutes(endTimeB) - getRemainingMinutes(endTimeA);
+        if (sortByRecent) {
+          const [startTimeA] = a.time.split('-');
+          const [startTimeB] = b.time.split('-');
+          return parseTime(startTimeB).getTime() - parseTime(startTimeA).getTime();
+        } else {
+          const [, endTimeA] = a.time.split('-');
+          const [, endTimeB] = b.time.split('-');
+          return getRemainingMinutes(endTimeB) - getRemainingMinutes(endTimeA);
+        }
       });
-  }, [uniqueClasses, selectedSubject, currentTime]);
+  }, [uniqueClasses, selectedSubject, sortByRecent]);
 
   // Call onReady when live classes are ready
   useEffect(() => {
@@ -292,13 +295,40 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
   const upcomingClasses = useMemo(() => {
     return uniqueClasses
       .filter((c) => {
-        const [startTime, endTime] = c.time.split('-');
+        const [startTime] = c.time.split('-');
         const startDate = parseTime(startTime);
         const minutesUntilStart = (startDate.getTime() - new Date().getTime()) / 60000;
         return isClassDay(c.days) && minutesUntilStart > 0 && minutesUntilStart <= selectedTimeFrame;
       })
-      .sort((a, b) => getStartTime(a.time) - getStartTime(b.time)); // Sort by start time
-  }, [uniqueClasses, parseTime, selectedTimeFrame, currentTime]);
+      .sort((a, b) => getStartTime(a.time) - getStartTime(b.time));
+  }, [uniqueClasses, selectedTimeFrame]);
+
+  // Get count of unique subjects in live lectures
+  const liveSubjectsCount = useMemo(() => {
+    const subjectSet = new Set<string>();
+    filteredLiveClasses.forEach(c => {
+      const match = c.courseCode.match(/^([A-Z]+)/);
+      if (match) subjectSet.add(match[0]);
+    });
+    return subjectSet.size;
+  }, [filteredLiveClasses]);
+
+  // Get count of unique subjects in upcoming lectures
+  const upcomingSubjectsCount = useMemo(() => {
+    const subjectSet = new Set<string>();
+    upcomingClasses.forEach(c => {
+      const match = c.courseCode.match(/^([A-Z]+)/);
+      if (match) subjectSet.add(match[0]);
+    });
+    return subjectSet.size;
+  }, [upcomingClasses]);
+
+  // Filter upcoming classes by subject
+  const filteredUpcomingClasses = useMemo(() => {
+    return selectedUpcomingSubject
+      ? upcomingClasses.filter(c => c.courseCode.startsWith(selectedUpcomingSubject))
+      : upcomingClasses;
+  }, [upcomingClasses, selectedUpcomingSubject]);
 
   const getTimeUntilStart = (startTime: string) => {
     const now = new Date();
@@ -483,40 +513,6 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
       </div>
     );
   }
-
-  // Get minutes elapsed since class started
-  const getMinutesElapsed = useCallback((startTime: string) => {
-    const now = new Date();
-    const startDate = parseTime(startTime);
-    return Math.floor((now.getTime() - startDate.getTime()) / 60000);
-  }, []);
-
-  // Get count of unique subjects in live lectures
-  const liveSubjectsCount = useMemo(() => {
-    const subjectSet = new Set<string>();
-    filteredLiveClasses.forEach(c => {
-      const match = c.courseCode.match(/^([A-Z]+)/);
-      if (match) subjectSet.add(match[0]);
-    });
-    return subjectSet.size;
-  }, [filteredLiveClasses]);
-
-  // Get count of unique subjects in upcoming lectures
-  const upcomingSubjectsCount = useMemo(() => {
-    const subjectSet = new Set<string>();
-    upcomingClasses.forEach(c => {
-      const match = c.courseCode.match(/^([A-Z]+)/);
-      if (match) subjectSet.add(match[0]);
-    });
-    return subjectSet.size;
-  }, [upcomingClasses]);
-
-  // Filter upcoming classes by subject
-  const filteredUpcomingClasses = useMemo(() => {
-    return selectedUpcomingSubject
-      ? upcomingClasses.filter(c => c.courseCode.startsWith(selectedUpcomingSubject))
-      : upcomingClasses;
-  }, [upcomingClasses, selectedUpcomingSubject]);
 
   return (
     <div className="space-y-8">
