@@ -57,8 +57,6 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
   }, [classes]);
 
   const [currentTime, setCurrentTime] = useState(formatPSTTime());
-  const [sortedClasses, setSortedClasses] = useState<ClassItem[]>([]);
-  const [isSorting, setIsSorting] = useState(false);
   const [selectedSubject, setSelectedSubject] = useState<string>('');
   const [selectedUpcomingSubject, setSelectedUpcomingSubject] = useState<string>('');
   const [selectedTimeFrame, setSelectedTimeFrame] = useState<number>(60); // Default 1 hour (60 minutes)
@@ -210,7 +208,6 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
   useEffect(() => {
     const sortClasses = async () => {
       if (mode === 'catalog') {
-        setIsSorting(true);
         // Process in chunks to avoid blocking UI
         const chunkSize = 100;
         const chunks = Math.ceil(uniqueClasses.length / chunkSize);
@@ -246,8 +243,6 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
           return getStartTime(a.time) - getStartTime(b.time);
         });
         
-        setSortedClasses(finalSorted);
-        setIsSorting(false);
         onReady?.();
       }
     };
@@ -283,7 +278,7 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
           return getRemainingMinutes(endTimeB) - getRemainingMinutes(endTimeA);
         }
       });
-  }, [uniqueClasses, selectedSubject, sortByRecent, currentTime]);
+  }, [uniqueClasses, selectedSubject, sortByRecent]);
 
   // Call onReady when live classes are ready
   useEffect(() => {
@@ -301,7 +296,7 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
         return isClassDay(c.days) && minutesUntilStart > 0 && minutesUntilStart <= selectedTimeFrame;
       })
       .sort((a, b) => getStartTime(a.time) - getStartTime(b.time));
-  }, [uniqueClasses, selectedTimeFrame, currentTime]);
+  }, [uniqueClasses, selectedTimeFrame]);
 
   // Count unique subjects in filtered classes
   const catalogSubjectsCount = uniqueClasses
@@ -574,19 +569,18 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
           </div>
         </div>
         <div className="mt-4">
-          {isSorting ? (
-            <div className="flex flex-col items-center justify-center py-8">
-              <Loader />
-              <div className="text-gray-400 mt-4">
-                Sorting {uniqueClasses.length} classes...
-              </div>
-            </div>
-          ) : (
+          {filteredCatalogClasses.length > 0 ? (
             <div className="bg-gray-800 rounded-lg overflow-hidden shadow-[0_0_12px_-2px_rgba(0,0,0,0.7)]">
               {renderTableHeader('catalog')}
               {filteredCatalogClasses.map((c, i) => 
                 renderClassRow(c, 'catalog', i === filteredCatalogClasses.length - 1)
               )}
+            </div>
+          ) : (
+            <div className="mt-8">
+              <div className="text-center py-8 text-gray-400">
+                Nothing found in the catalog.
+              </div>
             </div>
           )}
         </div>
