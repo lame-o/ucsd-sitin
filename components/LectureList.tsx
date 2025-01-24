@@ -359,16 +359,13 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
   );
 
   const renderClassRow = (classItem: ClassItem, status: 'live' | 'upcoming' | 'catalog', isLast: boolean) => {
-    const dotColor = status === 'live' ? 'bg-green-500 shadow-green-500/75 shadow-[0_0_5px_3px]' : status === 'upcoming' ? 'bg-gray-500' : 'bg-gray-500';
+    const dotColor = status === 'live' ? 'bg-green-500 shadow-green-500/75 shadow-[0_0_5px_3px]' : 'bg-gray-500';
     const dotAnimation = status === 'live' ? 'animate-pulse' : '';
     
     // Format the time range nicely
     const [startTime, endTime] = classItem.time.split('-');
     const formattedTime = `${formatTime(startTime)} - ${formatTime(endTime)}`;
     
-    const showTimeRemaining = status === 'live';
-    const showBeginsIn = status === 'upcoming';
-
     // Get remaining minutes for live classes
     const remainingMinutes = status === 'live' ? getRemainingMinutes(endTime) : 0;
     const isEnding = remainingMinutes <= 30;
