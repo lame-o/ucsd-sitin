@@ -490,22 +490,22 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
   // Get count of unique subjects in live lectures
   const liveSubjectsCount = useMemo(() => {
     const subjectSet = new Set<string>();
-    uniqueClasses.forEach(c => {
+    filteredLiveClasses.forEach(c => {
       const match = c.courseCode.match(/^([A-Z]+)/);
       if (match) subjectSet.add(match[0]);
     });
     return subjectSet.size;
-  }, [uniqueClasses]);
+  }, [filteredLiveClasses]);
 
   // Get count of unique subjects in upcoming lectures
   const upcomingSubjectsCount = useMemo(() => {
     const subjectSet = new Set<string>();
-    uniqueClasses.forEach(c => {
+    upcomingClasses.forEach(c => {
       const match = c.courseCode.match(/^([A-Z]+)/);
       if (match) subjectSet.add(match[0]);
     });
     return subjectSet.size;
-  }, [uniqueClasses]);
+  }, [upcomingClasses]);
 
   // Filter upcoming classes by subject
   const filteredUpcomingClasses = useMemo(() => {
