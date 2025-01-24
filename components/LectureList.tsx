@@ -66,7 +66,7 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
   const [sortByRecent, setSortByRecent] = useState(false);
 
   // Extract all unique subjects and create subject descriptions
-  const { subjects, groupedSubjects, subjectDescriptions } = useMemo(() => {
+  const { groupedSubjects, subjectDescriptions } = useMemo(() => {
     const subjectSet = new Set<string>();
     const descriptions: Record<string, string> = {
       'AAS': 'African American Studies',
@@ -192,7 +192,6 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
     });
 
     return {
-      subjects: sortedSubjects,
       groupedSubjects: grouped,
       subjectDescriptions: descriptions
     };
@@ -342,22 +341,26 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
     return hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`;
   };
 
-  const renderTableHeader = (showTimeRemaining = false, showBeginsIn = false) => (
-    <div className={`grid ${showTimeRemaining ? 'grid-cols-[2fr,1.5fr,1fr,0.7fr,0.7fr,1fr,0.8fr]' : showBeginsIn ? 'grid-cols-[2fr,1.5fr,1fr,0.7fr,0.7fr,1fr,0.8fr]' : 'grid-cols-[2fr,1.5fr,1fr,0.7fr,0.7fr,0.7fr,1fr]'} gap-x-2 px-6 py-3 bg-gray-700 text-xs font-medium ${showTimeRemaining ? 'text-gray-100' : 'text-gray-400'} uppercase tracking-wider`}>
-    <div className="pl-8">Class</div>
-    <div className="pl-9">Professor</div>
-    <div className="pl-2">Building</div>
-    <div className="pl-4">Room</div>
-    <div className="pl-2">Seats</div>
-    {!showTimeRemaining && !showBeginsIn && <div className="pl-2">Days</div>}
-    <div className="pl-16">Time</div>
-    {(showTimeRemaining || showBeginsIn) && (
-      <div className={`text-right pr-2 ${showBeginsIn ? 'text-gray-400' : 'text-white'}`}>
-        {showTimeRemaining ? 'Time Left' : 'Begins In'}
+  const renderTableHeader = (mode: 'live' | 'upcoming' | 'catalog') => {
+    const showTimeRemaining = mode === 'live';
+    const showBeginsIn = mode === 'upcoming';
+    return (
+      <div className={`grid ${showTimeRemaining ? 'grid-cols-[2fr,1.5fr,1fr,0.7fr,0.7fr,1fr,0.8fr]' : showBeginsIn ? 'grid-cols-[2fr,1.5fr,1fr,0.7fr,0.7fr,1fr,0.8fr]' : 'grid-cols-[2fr,1.5fr,1fr,0.7fr,0.7fr,0.7fr,1fr]'} gap-x-2 px-6 py-3 bg-gray-700 text-xs font-medium ${showTimeRemaining ? 'text-gray-100' : 'text-gray-400'} uppercase tracking-wider`}>
+        <div className="pl-8">Class</div>
+        <div className="pl-9">Professor</div>
+        <div className="pl-2">Building</div>
+        <div className="pl-4">Room</div>
+        <div className="pl-2">Seats</div>
+        {!showTimeRemaining && !showBeginsIn && <div className="pl-2">Days</div>}
+        <div className="pl-16">Time</div>
+        {(showTimeRemaining || showBeginsIn) && (
+          <div className={`text-right pr-2 ${showBeginsIn ? 'text-gray-400' : 'text-white'}`}>
+            {showTimeRemaining ? 'Time Left' : 'Begins In'}
+          </div>
+        )}
       </div>
-    )}
-  </div>
-  );
+    );
+  };
 
   const renderClassRow = (classItem: ClassItem, status: 'live' | 'upcoming' | 'catalog', isLast: boolean) => {
     const dotColor = status === 'live' ? 'bg-green-500 shadow-green-500/75 shadow-[0_0_5px_3px]' : status === 'upcoming' ? 'bg-gray-500' : 'bg-gray-500';
@@ -433,24 +436,26 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
     );
   };
 
+  // Memoized catalog subjects count
+  const catalogSubjectsCount = useMemo(() => {
+    if (mode !== 'catalog') return 0;
+    const subjectSet = new Set<string>();
+    sortedClasses.forEach(c => {
+      const match = c.courseCode.match(/^([A-Z]+)/);
+      if (match) subjectSet.add(match[0]);
+    });
+    return subjectSet.size;
+  }, [mode, sortedClasses]);
+
+  // Memoized filtered catalog classes
+  const filteredCatalogClasses = useMemo(() => {
+    if (mode !== 'catalog') return [];
+    return selectedCatalogSubject
+      ? sortedClasses.filter(c => c.courseCode.startsWith(selectedCatalogSubject))
+      : sortedClasses;
+  }, [mode, sortedClasses, selectedCatalogSubject]);
+
   if (mode === 'catalog') {
-    // Get count of unique subjects in catalog
-    const catalogSubjectsCount = useMemo(() => {
-      const subjectSet = new Set<string>();
-      sortedClasses.forEach(c => {
-        const match = c.courseCode.match(/^([A-Z]+)/);
-        if (match) subjectSet.add(match[0]);
-      });
-      return subjectSet.size;
-    }, [sortedClasses]);
-
-    // Filter catalog classes by subject
-    const filteredCatalogClasses = useMemo(() => {
-      return selectedCatalogSubject
-        ? sortedClasses.filter(c => c.courseCode.startsWith(selectedCatalogSubject))
-        : sortedClasses;
-    }, [sortedClasses, selectedCatalogSubject]);
-
     return (
       <div className="space-y-8">
         <div className="border-b border-gray-700 pb-4">
@@ -503,7 +508,7 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
             </div>
           ) : (
             <div className="bg-gray-800 rounded-lg overflow-hidden">
-              {renderTableHeader()}
+              {renderTableHeader('catalog')}
               {filteredCatalogClasses.map((c, i) => 
                 renderClassRow(c, 'catalog', i === filteredCatalogClasses.length - 1)
               )}
@@ -588,7 +593,7 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
         <div className="mt-4">
           {filteredLiveClasses.length > 0 ? (
             <div className="bg-gray-800 rounded-lg overflow-hidden shadow-[0_0_15px_-3px_rgba(0,0,0)] relative">
-              {renderTableHeader(true)}
+              {renderTableHeader('live')}
               {filteredLiveClasses.map((c, i) => 
                 renderClassRow(c, 'live', i === filteredLiveClasses.length - 1)
               )}
@@ -686,7 +691,7 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
         {filteredUpcomingClasses.length > 0 ? (
           <div className="mt-8">
             <div className="bg-gray-800 rounded-lg overflow-hidden shadow-[0_0_12px_-3px_rgba(55,64,81,0.7)]">
-              {renderTableHeader(false, true)}
+              {renderTableHeader('upcoming')}
               {filteredUpcomingClasses.map((c, i) => 
                 renderClassRow(c, 'upcoming', i === filteredUpcomingClasses.length - 1)
               )}

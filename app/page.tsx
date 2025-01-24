@@ -25,7 +25,6 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState("Live Lectures")
   const [classes, setClasses] = useState<ClassItem[]>([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
   const [isInitialLoad, setIsInitialLoad] = useState(true)
 
   useEffect(() => {
@@ -34,7 +33,6 @@ export default function Home() {
       const { records, error } = await fetchRecords()
       
       if (error) {
-        setError(error)
         console.error(error)
       } else {
         setClasses(records as ClassItem[])
