@@ -217,7 +217,7 @@ export default function Home() {
                   <div className="bg-gray-800/50 backdrop-blur rounded-lg p-10 space-y-10">
                     <div className="space-y-4">
                       <h2 className="text-2xl font-bold text-gray-100 flex items-center gap-2">
-                        <span className="text-blue-400">🌊</span> Where This Came From
+                        <span className="text-blue-400">👇</span> Info
                       </h2>
                       <div className="bg-gray-700/50 rounded-lg p-6">
                         <p className="text-gray-300 mb-4">

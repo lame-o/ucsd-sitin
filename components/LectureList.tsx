@@ -313,19 +313,19 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
 
   const renderTableHeader = (showTimeRemaining = false, showBeginsIn = false) => (
     <div className={`grid ${showTimeRemaining ? 'grid-cols-[2fr,1.5fr,1fr,0.7fr,0.7fr,1fr,0.8fr]' : showBeginsIn ? 'grid-cols-[2fr,1.5fr,1fr,0.7fr,0.7fr,1fr,0.8fr]' : 'grid-cols-[2fr,1.5fr,1fr,0.7fr,0.7fr,0.7fr,1fr]'} gap-x-2 px-6 py-3 bg-gray-700 text-xs font-medium ${showTimeRemaining ? 'text-gray-100' : 'text-gray-400'} uppercase tracking-wider`}>
-      <div className="pl-8">Class</div>
-      <div className="pl-9">Professor</div>
-      <div className="pl-2">Building</div>
-      <div className="pl-4">Room</div>
-      <div className="pl-2">Seats</div>
-      {!showTimeRemaining && !showBeginsIn && <div className="pl-2">Days</div>}
-      <div className="pl-16">Time</div>
-      {(showTimeRemaining || showBeginsIn) && (
-        <div className={`text-right pr-2 ${showBeginsIn ? 'text-blue-400' : 'text-yellow-400'}`}>
-          {showTimeRemaining ? 'Time Left' : 'Begins In'}
-        </div>
-      )}
-    </div>
+    <div className="pl-8">Class</div>
+    <div className="pl-9">Professor</div>
+    <div className="pl-2">Building</div>
+    <div className="pl-4">Room</div>
+    <div className="pl-2">Seats</div>
+    {!showTimeRemaining && !showBeginsIn && <div className="pl-2">Days</div>}
+    <div className="pl-16">Time</div>
+    {(showTimeRemaining || showBeginsIn) && (
+      <div className={`text-right pr-2 ${showBeginsIn ? 'text-gray-400' : 'text-white'}`}>
+        {showTimeRemaining ? 'Time Left' : 'Begins In'}
+      </div>
+    )}
+  </div>
   );
 
   const renderClassRow = (classItem: ClassItem, status: 'live' | 'upcoming' | 'catalog', isLast: boolean) => {
@@ -338,6 +338,12 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
     
     const showTimeRemaining = status === 'live';
     const showBeginsIn = status === 'upcoming';
+
+    // Get remaining minutes for live classes
+    const remainingMinutes = status === 'live' ? getRemainingMinutes(endTime) : 0;
+    const isEnding = remainingMinutes <= 30;
+    const plentyOfTime = remainingMinutes > 60;
+    const timeColor = isEnding ? 'text-red-400' : plentyOfTime ? 'text-green-400' : 'text-yellow-400';
 
     // Common cell styles for vertical centering
     const cellClass = `flex items-center min-h-full gap-2 ${status === 'live' ? 'text-white font-medium' : 'text-gray-300'}`;
@@ -383,11 +389,11 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
         {(status === 'live' || status === 'upcoming') && (
           <div className={`${cellClass} justify-end pr-2`}>
             {status === 'live' ? (
-              <BoltIcon className="w-5 h-5 text-yellow-400 flex-shrink-0" />
+              <BoltIcon className={`w-5 h-5 ${timeColor} flex-shrink-0`} />
             ) : (
               <ArrowRightIcon className="w-5 h-5 text-blue-400 flex-shrink-0" />
             )}
-            <span className={`whitespace-nowrap ${status === 'live' ? 'text-yellow-400' : 'text-blue-400'}`}>
+            <span className={`whitespace-nowrap ${status === 'live' ? timeColor : 'text-blue-400'}`}>
               {status === 'live' ? getTimeRemaining(endTime) : getTimeUntilStart(startTime)}
             </span>
           </div>
@@ -512,7 +518,7 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
     <div className="space-y-8">
       <div className="flex justify-between items-center border-b border-gray-700 pb-4">
         <div className="w-full">
-          <h1 className="text-4xl font-bold text-blue-400 flex items-center gap-3">
+          <h1 className="text-4xl font-bold text-blue-400 flex items-center gap-3 py-2">
             <Image
               src="/ucsd_logo.webp"
               alt="UCSD"
@@ -528,7 +534,7 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
                 <select
                   value={selectedSubject}
                   onChange={(e) => setSelectedSubject(e.target.value)}
-                  className="w-full text-sm text-gray-300 bg-gray-700 rounded-md border border-gray-600 hover:border-gray-500 transition-colors px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full text-sm text-gray-300 bg-gray-700 rounded-md border border-gray-600 hover:border-gray-500 transition-colors px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-[0_0_15px_-3px_rgba(0,0,0)]"
                 >
                   <option value="">All Subjects</option>
                   <option disabled className="border-t border-gray-600 text-gray-500">
@@ -553,7 +559,7 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
               </div>
               <button
                 onClick={() => setSortByRecent(!sortByRecent)}
-                className="flex items-center gap-2 px-3 py-2 text-sm text-gray-300 bg-gray-700 rounded-md border border-gray-600 hover:border-gray-500 transition-colors"
+                className="flex items-center gap-2 px-3 py-2 text-sm text-gray-300 bg-gray-700 rounded-md border border-gray-600 hover:border-gray-500 transition-colors shadow-[0_0_15px_-3px_rgba(0,0,0)]"
                 title={sortByRecent ? "Sort by time remaining" : "Sort by recently started"}
               >
                 <ArrowsUpDownIcon className="h-4 w-4" />
@@ -580,7 +586,7 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
 
       {filteredLiveClasses.length > 0 && (
         <div>
-          <div className="bg-gray-800 rounded-lg overflow-hidden shadow-[0_0_15px_-3px_rgba(19,140,73,0.7)] relative">
+          <div className="bg-gray-800 rounded-lg overflow-hidden shadow-[0_0_15px_-3px_rgba(0,0,0)] relative">
             {renderTableHeader(true)}
             {filteredLiveClasses.map((c, i) => 
               renderClassRow(c, 'live', i === filteredLiveClasses.length - 1)
@@ -598,7 +604,7 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
                 <select
                   value={selectedUpcomingSubject}
                   onChange={(e) => setSelectedUpcomingSubject(e.target.value)}
-                  className="w-full text-sm text-gray-300 bg-gray-700 rounded-md border border-gray-600 hover:border-gray-500 transition-colors px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full text-sm text-gray-300 bg-gray-700 rounded-md border border-gray-600 hover:border-gray-500 transition-colors px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-[0_0_12px_-3px_rgba(55,64,81,0.5)]"
                 >
                   <option value="">All Subjects</option>
                   <option disabled className="border-t border-gray-600 text-gray-500">
@@ -624,9 +630,9 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setSelectedTimeFrame(30)}
-                  className={`px-3 py-1.5 rounded ${
+                  className={`px-3 py-1.5 rounded  ${
                     selectedTimeFrame === 30
-                      ? 'bg-gray-700 text-white'
+                      ? 'bg-gray-700 text-white shadow-[0_0_10px_-3px_rgba(55,64,81,0.7)]'
                       : 'text-gray-400 hover:text-gray-300'
                   }`}
                 >
@@ -636,7 +642,7 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
                   onClick={() => setSelectedTimeFrame(60)}
                   className={`px-3 py-1.5 rounded ${
                     selectedTimeFrame === 60
-                      ? 'bg-gray-700 text-white'
+                      ? 'bg-gray-700 text-white shadow-[0_0_10px_-3px_rgba(55,64,81,0.7)]'
                       : 'text-gray-400 hover:text-gray-300'
                   }`}
                 >
@@ -646,7 +652,7 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
                   onClick={() => setSelectedTimeFrame(120)}
                   className={`px-3 py-1.5 rounded ${
                     selectedTimeFrame === 120
-                      ? 'bg-gray-700 text-white'
+                      ? 'bg-gray-700 text-white shadow-[0_0_10px_-3px_rgba(55,64,81,0.7)]'
                       : 'text-gray-400 hover:text-gray-300'
                   }`}
                 >
@@ -671,7 +677,7 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
         </div>
         {filteredUpcomingClasses.length > 0 ? (
           <div className="mt-8">
-            <div className="bg-gray-800 rounded-lg overflow-hidden">
+            <div className="bg-gray-800 rounded-lg overflow-hidden shadow-[0_0_12px_-3px_rgba(55,64,81,0.7)]">
               {renderTableHeader(false, true)}
               {filteredUpcomingClasses.map((c, i) => 
                 renderClassRow(c, 'upcoming', i === filteredUpcomingClasses.length - 1)
