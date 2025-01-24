@@ -97,7 +97,7 @@ export default function Home() {
                   <div className="flex justify-between items-center border-b border-gray-700 pb-4">
                     <div>
                       <h1 className="text-4xl font-bold text-white">About UCSD-SitIn</h1>
-                      <p className="text-gray-400 mt-2">Built by Triton &apos;s for literally educational purposes</p>
+                      <p className="text-gray-400 mt-2">Built by Triton 🐻 for educational purposes</p>
                     </div>
                   </div>
 
@@ -105,7 +105,7 @@ export default function Home() {
                     <div className="space-y-4">
                       <p className="text-gray-300 text-lg leading-relaxed">
                         As a UCSD student, I always wanted a way to explore 
-                        different classes and sit in on subjects I never got the chance to with my major.<br /><br />
+                        different classes and sit-in on subjects I never got the chance to with my major.<br /><br />
                         That&apos;s why I built UCSD-SitIn, to make it super easy to find and attend available lectures 
                         across campus. Whether you&apos;re trying to catch up on missed content, explore potential majors, or just learn 
                         something new, this tool helps you find the right lecture at the right time.
@@ -222,7 +222,7 @@ export default function Home() {
                       </h2>
                       <div className="bg-gray-700/50 rounded-lg p-6">
                         <p className="text-gray-300 mb-4">
-                          Hey! I&apos;m <a href="https://github.com/lame-o" className="text-blue-400 hover:underline">Liam</a> and this app is built on top of my other project 
+                          This app is built on top of my other project 
                           called <a href="https://github.com/lame-o/schedule-surfer" className="text-blue-400 hover:underline">ScheduleSurfer</a>. I wrote it as a Node.js / Playwright scraper that pulls 
                           data from UCSD&apos;s schedule of classes and structures it in a way that&apos;s actually usable. The base config is set to pull all data (which is a lot) so use filters when needed.
                         </p>
