@@ -21,7 +21,6 @@ import {
 } from '@heroicons/react/24/outline';
 import { BoltIcon } from '@heroicons/react/24/solid';
 import Image from 'next/image';
-import Loader from './Loader';
 
 interface ClassItem {
   id: string
@@ -234,8 +233,8 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
           await new Promise(resolve => setTimeout(resolve, 0));
         }
         
-        // Final merge sort of all chunks
-        const finalSorted = sorted.sort((a, b) => {
+        // Remove the finalSorted assignment and just do the final sort on 'sorted'
+        sorted.sort((a, b) => {
           const codeA = a.courseCode.toUpperCase();
           const codeB = b.courseCode.toUpperCase();
           if (codeA < codeB) return -1;
