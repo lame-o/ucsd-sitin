@@ -322,7 +322,7 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
   );
 
   const renderClassRow = (classItem: ClassItem, status: 'live' | 'upcoming' | 'catalog', isLast: boolean) => {
-    const dotColor = status === 'live' ? 'bg-green-500 shadow-green-500/75 shadow-[0_0_5px_3px]' : status === 'upcoming' ? 'bg-yellow-500' : 'bg-gray-500';
+    const dotColor = status === 'live' ? 'bg-green-500 shadow-green-500/75 shadow-[0_0_5px_3px]' : status === 'upcoming' ? 'bg-gray-500' : 'bg-gray-500';
     const dotAnimation = status === 'live' ? 'animate-pulse' : '';
     
     // Format the time range nicely
