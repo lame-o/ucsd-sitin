@@ -32,7 +32,7 @@ interface Section {
   'Room': string;
   'Instructor': string;
   'Available Seats': number;
-  'Seat Limit': number;
+  'Seat Limit': string;
   'Days': string;
 }
 
@@ -89,7 +89,7 @@ export const fetchRecords = async () => {
       }
 
       // Calculate the correct seat limit
-      let seatLimit = parseInt(lectureSection['Seat Limit']) || 0;
+      let seatLimit = parseInt(lectureSection['Seat Limit'] || '0');
       
       // If seat limit is 0, look for associated discussion sections
       if (seatLimit === 0) {
@@ -107,7 +107,7 @@ export const fetchRecords = async () => {
         if (discussionSections.length > 0) {
           // Sum up the seat limits from all discussion sections
           seatLimit = discussionSections.reduce((total, section) => {
-            const sectionLimit = parseInt(section['Seat Limit']) || 0;
+            const sectionLimit = parseInt(section['Seat Limit'] || '0');
             return total + sectionLimit;
           }, 0);
         }
