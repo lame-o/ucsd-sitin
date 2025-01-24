@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import { gsap } from "gsap"
-import { PlayCircle, BookOpen, Info, Cog, ChevronLeft, ChevronRight } from "lucide-react"
+import { PlayCircle, BookOpen, Info, Cog, ChevronLeft } from "lucide-react"
 import { cn } from "@/lib/utils"
 import Image from 'next/image';
 
