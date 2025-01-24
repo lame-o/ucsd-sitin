@@ -250,14 +250,14 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
         
         setSortedClasses(finalSorted);
         setIsSorting(false);
-        // Only signal ready after sorting is complete
-        onReady?.();
-      } else {
         onReady?.();
       }
     };
 
-    sortClasses();
+    // Only sort if we have classes
+    if (uniqueClasses.length > 0) {
+      sortClasses();
+    }
   }, [mode, uniqueClasses, onReady]);
 
   // Helper function to get start time for sorting
@@ -280,6 +280,13 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
         return getRemainingMinutes(endTimeB) - getRemainingMinutes(endTimeA);
       });
   }, [uniqueClasses, selectedSubject, currentTime]);
+
+  // Call onReady when live classes are ready
+  useEffect(() => {
+    if (mode === 'live' && uniqueClasses.length > 0) {
+      onReady?.();
+    }
+  }, [mode, uniqueClasses, onReady]);
 
   const upcomingClasses = useMemo(() => {
     return uniqueClasses

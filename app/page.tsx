@@ -25,8 +25,7 @@ export default function Home() {
   const [classes, setClasses] = useState<ClassItem[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [isChangingTab, setIsChangingTab] = useState(false)
-  const [isComponentReady, setIsComponentReady] = useState(false)
+  const [isInitialLoad, setIsInitialLoad] = useState(true)
 
   useEffect(() => {
     const fetchClassesData = async () => {
@@ -45,20 +44,25 @@ export default function Home() {
     fetchClassesData()
   }, [])
 
+  const handleComponentReady = () => {
+    // Only handle loading state for initial load
+    if (isInitialLoad) {
+      setIsInitialLoad(false)
+    }
+  }
+
   // Handle tab changes
   useEffect(() => {
     let timeoutId: NodeJS.Timeout
 
     const handleTabChange = async () => {
-      setIsChangingTab(true)
-      setIsComponentReady(false)
+      setIsInitialLoad(true)
 
       // Add a longer delay for tab changes
       timeoutId = setTimeout(() => {
-        setIsComponentReady(true)
+        setIsInitialLoad(false)
         // Keep loading for a bit after component is ready to ensure smooth transition
         setTimeout(() => {
-          setIsChangingTab(false)
         }, 300)
       }, 800)
     }
@@ -71,8 +75,7 @@ export default function Home() {
   }, [activeTab])
 
   const handleTabClick = (tab: string) => {
-    setIsChangingTab(true)
-    setIsComponentReady(false)
+    setIsInitialLoad(true)
     setActiveTab(tab)
     
   }
@@ -82,7 +85,7 @@ export default function Home() {
       <Sidebar activeTab={activeTab} setActiveTab={handleTabClick} />
       <div className="flex-1 p-8">
         <div className="max-w-7xl mx-auto">
-          {isChangingTab && activeTab !== 'About' && activeTab !== 'Technical' ? (
+          {(loading || isInitialLoad) && activeTab !== 'About' && activeTab !== 'Technical' ? (
             <div className="flex justify-center items-center h-64">
               <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-400"></div>
             </div>
@@ -282,7 +285,7 @@ export default function Home() {
                 <LectureList 
                   classes={classes} 
                   mode={activeTab === "Course Catalog" ? "catalog" : "live"}
-                  onReady={() => setIsComponentReady(true)}
+                  onReady={handleComponentReady}
                 />
               )}
             </>
