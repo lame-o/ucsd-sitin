@@ -10,6 +10,9 @@ const poppins = Poppins({
 export const metadata = {
   title: "UCSD Live Classes",
   description: "View live and upcoming lectures at UCSD",
+  icons: {
+    icon: '/favicon.ico',
+  },
 }
 
 export default function RootLayout({
