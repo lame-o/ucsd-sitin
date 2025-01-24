@@ -5,6 +5,7 @@ import LectureList from "@/components/LectureList"
 import Sidebar from "@/components/Sidebar"
 import { fetchRecords } from "@/utils/airtable"
 import Image from 'next/image'
+import Loader from '@/components/Loader'
 
 interface ClassItem {
   id: string
@@ -86,8 +87,9 @@ export default function Home() {
       <div className="flex-1 p-8">
         <div className="max-w-7xl mx-auto">
           {(loading || isInitialLoad) && activeTab !== 'About' && activeTab !== 'Technical' ? (
-            <div className="flex justify-center items-center h-64">
-              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-400"></div>
+            <div className="flex flex-col items-center justify-center h-64">
+              <Loader />
+              <div className="text-gray-400 mt-4">Getting Ready!</div>
             </div>
           ) : (
             <>

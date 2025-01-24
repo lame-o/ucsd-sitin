@@ -22,6 +22,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { BoltIcon } from '@heroicons/react/24/solid';
 import Image from 'next/image';
+import Loader from './Loader';
 
 interface ClassItem {
   id: string
@@ -464,8 +465,11 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
         </div>
         <div className="mt-4">
           {isSorting ? (
-            <div className="text-center py-8 text-gray-400">
-              Sorting {uniqueClasses.length} classes...
+            <div className="flex flex-col items-center justify-center py-8">
+              <Loader />
+              <div className="text-gray-400 mt-4">
+                Sorting {uniqueClasses.length} classes...
+              </div>
             </div>
           ) : (
             <div className="bg-gray-800 rounded-lg overflow-hidden">
