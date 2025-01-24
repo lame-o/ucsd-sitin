@@ -599,7 +599,9 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
               height={175}
               className="-mt-1.5 h-175 w-175"
             />
-            <span className="text-4xl text-white font-bold">Live Lectures 🦝</span>
+            <span className="text-4xl text-white font-bold">
+              Live Lectures <span className="text-3xl font-bold">🦝 {new Date().toLocaleDateString('en-US', { weekday: 'long', timeZone: 'America/Los_Angeles' })}</span>
+            </span>
           </h1>
           <div className="flex items-center justify-between gap-4 mt-2">
             <div className="flex items-center gap-4">
