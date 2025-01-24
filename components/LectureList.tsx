@@ -341,26 +341,22 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
     return hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`;
   };
 
-  const renderTableHeader = (mode: 'live' | 'upcoming' | 'catalog') => {
-    const showTimeRemaining = mode === 'live';
-    const showBeginsIn = mode === 'upcoming';
-    return (
-      <div className={`grid ${showTimeRemaining ? 'grid-cols-[2fr,1.5fr,1fr,0.7fr,0.7fr,1fr,0.8fr]' : showBeginsIn ? 'grid-cols-[2fr,1.5fr,1fr,0.7fr,0.7fr,1fr,0.8fr]' : 'grid-cols-[2fr,1.5fr,1fr,0.7fr,0.7fr,0.7fr,1fr]'} gap-x-2 px-6 py-3 bg-gray-700 text-xs font-medium ${showTimeRemaining ? 'text-gray-100' : 'text-gray-400'} uppercase tracking-wider`}>
-        <div className="pl-8">Class</div>
-        <div className="pl-9">Professor</div>
-        <div className="pl-2">Building</div>
-        <div className="pl-4">Room</div>
-        <div className="pl-2">Seats</div>
-        {!showTimeRemaining && !showBeginsIn && <div className="pl-2">Days</div>}
-        <div className="pl-16">Time</div>
-        {(showTimeRemaining || showBeginsIn) && (
-          <div className={`text-right pr-2 ${showBeginsIn ? 'text-gray-400' : 'text-white'}`}>
-            {showTimeRemaining ? 'Time Left' : 'Begins In'}
-          </div>
-        )}
-      </div>
-    );
-  };
+  const renderTableHeader = (mode: 'live' | 'upcoming' | 'catalog') => (
+    <div className={`grid ${mode === 'live' ? 'grid-cols-[2fr,1.5fr,1fr,0.7fr,0.7fr,1fr,0.8fr]' : mode === 'upcoming' ? 'grid-cols-[2fr,1.5fr,1fr,0.7fr,0.7fr,1fr,0.8fr]' : 'grid-cols-[2fr,1.5fr,1fr,0.7fr,0.7fr,0.7fr,1fr]'} gap-x-2 px-6 py-3 bg-gray-700 text-xs font-medium ${mode === 'live' ? 'text-gray-100' : 'text-gray-400'} uppercase tracking-wider`}>
+      <div className="pl-8">Class</div>
+      <div className="pl-9">Professor</div>
+      <div className="pl-2">Building</div>
+      <div className="pl-4">Room</div>
+      <div className="pl-2">Seats</div>
+      {!(mode === 'live' || mode === 'upcoming') && <div className="pl-2">Days</div>}
+      <div className="pl-16">Time</div>
+      {(mode === 'live' || mode === 'upcoming') && (
+        <div className={`text-right pr-2 ${mode === 'upcoming' ? 'text-gray-400' : 'text-white'}`}>
+          {mode === 'live' ? 'Time Left' : 'Begins In'}
+        </div>
+      )}
+    </div>
+  );
 
   const renderClassRow = (classItem: ClassItem, status: 'live' | 'upcoming' | 'catalog', isLast: boolean) => {
     const dotColor = status === 'live' ? 'bg-green-500 shadow-green-500/75 shadow-[0_0_5px_3px]' : status === 'upcoming' ? 'bg-gray-500' : 'bg-gray-500';
