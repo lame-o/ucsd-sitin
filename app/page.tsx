@@ -74,6 +74,7 @@ export default function Home() {
     setIsChangingTab(true)
     setIsComponentReady(false)
     setActiveTab(tab)
+    
   }
 
   return (
@@ -81,209 +82,210 @@ export default function Home() {
       <Sidebar activeTab={activeTab} setActiveTab={handleTabClick} />
       <div className="flex-1 p-8">
         <div className="max-w-7xl mx-auto">
-          {loading ? (
-            <div className="flex justify-center items-center h-64">
-              <p className="text-gray-400">Loading lectures...</p>
-            </div>
-          ) : error ? (
-            <div className="bg-red-900/50 text-red-400 p-4 rounded-lg">
-              Error: {error}
-            </div>
-          ) : isChangingTab || !isComponentReady ? (
+          {isChangingTab && activeTab !== 'About' && activeTab !== 'Technical' ? (
             <div className="flex justify-center items-center h-64">
               <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-400"></div>
             </div>
-          ) : activeTab === "About" ? (
-            <div className="space-y-8 max-w-6xl">
-              <div className="flex justify-between items-center border-b border-gray-700 pb-4">
-                <div>
-                  <h1 className="text-4xl font-bold text-white">About UCSD Sit-In</h1>
-                  <p className="text-gray-400 mt-2">Built by a fellow Triton in Warren 🐻 for literally educational purposes</p>
-                </div>
-              </div>
+          ) : (
+            <>
+              {activeTab === "About" ? (
+                <div className="max-w-5xl mx-auto space-y-8">
+                  <div className="flex justify-between items-center border-b border-gray-700 pb-4">
+                    <div>
+                      <h1 className="text-4xl font-bold text-white">About UCSD-SitIn</h1>
+                      <p className="text-gray-400 mt-2">Built by Triton 🐻 for literally educational purposes</p>
+                    </div>
+                  </div>
 
-              <div className="bg-gray-800/50 backdrop-blur rounded-lg p-10 space-y-10">
-                <div className="space-y-4">
-                  <p className="text-gray-300 text-lg leading-relaxed">
-                    Hey there! 👋 As a UCSD student, I know how frustrating it can be when you miss a lecture or want to explore 
-                    different classes. That's why I built UCSD-SitIn, to make it super easy to find and attend available lectures 
-                    across campus. Whether you're trying to catch up on missed content, explore potential majors, or just learn 
-                    something new, this tool helps you find the right lecture at the right time.
-                  </p>
-                </div>
+                  <div className="bg-gray-800/50 backdrop-blur rounded-lg p-10 space-y-10">
+                    <div className="space-y-4">
+                      <p className="text-gray-300 text-lg leading-relaxed">
+                        As a UCSD student, I always wanted a way to explore 
+                        different classes and sit in on subjects I never got the chance to with my major.<br /><br />
+                        That's why I built UCSD-SitIn, to make it super easy to find and attend available lectures 
+                        across campus. Whether you're trying to catch up on missed content, explore potential majors, or just learn 
+                        something new, this tool helps you find the right lecture at the right time.
+                      </p>
+                    </div>
 
-                <div className="space-y-4">
-                  <h2 className="text-2xl font-bold text-gray-100 flex items-center gap-2">
-                    <span className="text-blue-400">📍</span> Quick Facts
-                  </h2>
-                  <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <li className="bg-gray-700/50 rounded-lg p-4 text-gray-300">
-                      <span className="font-semibold text-blue-400">Winter 2024:</span> All data is current for this quarter
-                    </li>
-                    <li className="bg-gray-700/50 rounded-lg p-4 text-gray-300">
-                      <span className="font-semibold text-blue-400">Lectures Only:</span> No discussions or labs included
-                    </li>
-                    <li className="bg-gray-700/50 rounded-lg p-4 text-gray-300">
-                      <span className="font-semibold text-blue-400">Real-time Updates:</span> Live tracking of ongoing lectures
-                    </li>
-                    <li className="bg-gray-700/50 rounded-lg p-4 text-gray-300">
-                      <span className="font-semibold text-blue-400">Seat Info:</span> Some classes show 0 seats due to WebReg typos
-                    </li>
-                  </ul>
-                </div>
+                    <div className="space-y-4">
+                      <h2 className="text-2xl font-bold text-gray-100 flex items-center gap-2">
+                        <span className="text-blue-400">📍</span> Quick Facts
+                      </h2>
+                      <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <li className="bg-gray-700/50 rounded-lg p-4 text-gray-300">
+                          <span className="font-semibold text-blue-400">Winter 2025:</span> All data is current for this quarter
+                        </li>
+                        <li className="bg-gray-700/50 rounded-lg p-4 text-gray-300">
+                          <span className="font-semibold text-blue-400">Lectures Only:</span> No discussions or labs included (see technical)
+                        </li>
+                        <li className="bg-gray-700/50 rounded-lg p-4 text-gray-300">
+                          <span className="font-semibold text-blue-400">Real-time Updates:</span> Live tracking of ongoing lectures
+                        </li>
+                        <li className="bg-gray-700/50 rounded-lg p-4 text-gray-300">
+                          <span className="font-semibold text-blue-400">Seat Info:</span> Some classes show 0 seats due to WebReg typos
+                        </li>
+                      </ul>
+                    </div>
 
-                <div className="space-y-4">
-                  <h2 className="text-2xl font-bold text-gray-100 flex items-center gap-2">
-                    <span className="text-blue-400">🎯</span> How to Use It
-                  </h2>
-                  <div className="grid grid-cols-1 gap-4">
-                    <div className="bg-gray-700/50 rounded-lg p-4">
-                      <div className="flex gap-6 items-start">
-                        <div className="flex-1">
-                          <h3 className="text-lg font-semibold text-blue-400 mb-2">Live Lectures Tab</h3>
+                    <div className="space-y-4">
+                      <h2 className="text-2xl font-bold text-gray-100 flex items-center gap-2">
+                        <span className="text-blue-400">🎯</span> How to Use It
+                      </h2>
+                      <div className="grid grid-cols-1 gap-4">
+                        <div className="bg-gray-700/50 rounded-lg p-4">
+                          <div className="flex gap-6 items-start">
+                            <div className="flex-1">
+                              <h3 className="text-lg font-semibold text-blue-400 mb-2">Live Lectures Tab</h3>
+                              <ul className="list-disc list-inside space-y-2 text-gray-300">
+                                <li>Shows currently ongoing lectures across campus</li>
+                                <li>Filter by subject (e.g., CSE, MATH, PHIL)</li>
+                                <li>Sort by time remaining or recently started</li>
+                                <li>See room locations and remaining lecture time</li>
+                              </ul>
+                            </div>
+                            <Image
+                              src="/bearl.webp"
+                              alt="Warren Bear"
+                              width={125}
+                              height={125}
+                              className="rounded-lg"
+                            />
+                          </div>
+                        </div>
+                        <div className="bg-gray-700/50 rounded-lg p-4">
+                          <h3 className="text-lg font-semibold text-blue-400 mb-2">Course Catalog Tab</h3>
                           <ul className="list-disc list-inside space-y-2 text-gray-300">
-                            <li>Shows currently ongoing lectures across campus</li>
-                            <li>Filter by subject (e.g., CSE, MATH, PHIL)</li>
-                            <li>Sort by time remaining or recently started</li>
-                            <li>See room locations and remaining lecture time</li>
+                            <li>Browse all available lectures for the quarter</li>
+                            <li>Plan ahead for classes you want to check out</li>
+                            <li>Find course details and room information</li>
                           </ul>
                         </div>
-                        <Image
-                          src="/bearl.webp"
-                          alt="Warren Bear"
-                          width={125}
-                          height={125}
-                          className="rounded-lg"
-                        />
                       </div>
                     </div>
-                    <div className="bg-gray-700/50 rounded-lg p-4">
-                      <h3 className="text-lg font-semibold text-blue-400 mb-2">Course Catalog Tab</h3>
-                      <ul className="list-disc list-inside space-y-2 text-gray-300">
-                        <li>Browse all available lectures for the quarter</li>
-                        <li>Plan ahead for classes you want to check out</li>
-                        <li>Find course details and room information</li>
-                      </ul>
+
+                    <div className="space-y-4">
+                      <h2 className="text-2xl font-bold text-gray-100 flex items-center gap-2">
+                        <span className="text-blue-400">✨</span> Sit-In Etiquette
+                      </h2>
+                      <div className="bg-blue-900/20 border border-blue-800/50 rounded-lg p-6 text-gray-300">
+                        <ul className="space-y-3">
+                          <li className="flex items-start gap-2">
+                            <span className="text-blue-400">•</span>
+                            <span>Be respectful and quiet when entering/leaving mid-lecture</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <span className="text-blue-400">•</span>
+                            <span>Don't take seats from enrolled students, especially in smaller classes</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <span className="text-blue-400">•</span>
+                            <span>Follow any instructions or preferences set by the professor</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <span className="text-blue-400">•</span>
+                            <span>Consider emailing the professor beforehand for regular sit-ins</span>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+
+                    <div className="mt-8 text-sm">
+                      <p className="text-gray-400 bg-gray-700/30 rounded-lg p-4 border border-gray-600/50">
+                        <span className="font-semibold text-blue-400">Note:</span> This tool is built by a student, for students, 
+                        with education in mind. Always be respectful of class policies and professor preferences. Happy learning! 📚
+                      </p>
                     </div>
                   </div>
                 </div>
-
-                <div className="space-y-4">
-                  <h2 className="text-2xl font-bold text-gray-100 flex items-center gap-2">
-                    <span className="text-blue-400">✨</span> Sit-In Etiquette
-                  </h2>
-                  <div className="bg-blue-900/20 border border-blue-800/50 rounded-lg p-6 text-gray-300">
-                    <ul className="space-y-3">
-                      <li className="flex items-start gap-2">
-                        <span className="text-blue-400">•</span>
-                        <span>Be respectful and quiet when entering/leaving mid-lecture</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-blue-400">•</span>
-                        <span>Don't take seats from enrolled students, especially in smaller classes</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-blue-400">•</span>
-                        <span>Follow any instructions or preferences set by the professor</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-blue-400">•</span>
-                        <span>Consider emailing the professor beforehand for regular sit-ins</span>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-
-                <div className="mt-8 text-sm">
-                  <p className="text-gray-400 bg-gray-700/30 rounded-lg p-4 border border-gray-600/50">
-                    <span className="font-semibold text-blue-400">Note:</span> This tool is built by a student, for students, 
-                    with education in mind. Always be respectful of class policies and professor preferences. Happy learning! 📚
-                  </p>
-                </div>
-              </div>
-            </div>
-          ) : activeTab === "Technical" ? (
-            <div className="space-y-8 max-w-6xl">
-              <div className="flex justify-between items-center border-b border-gray-700 pb-4">
-                <div>
-                  <h1 className="text-4xl font-bold text-white">Technical Details</h1>
-                  <p className="text-gray-400 mt-2">How UCSD-SitIn Works</p>
-                </div>
-              </div>
-
-              <div className="bg-gray-800/50 backdrop-blur rounded-lg p-10 space-y-10">
-                <div className="space-y-4">
-                  <h2 className="text-2xl font-bold text-gray-100 flex items-center gap-2">
-                    <span className="text-blue-400">🌊</span> Where This Came From
-                  </h2>
-                  <div className="bg-gray-700/50 rounded-lg p-6">
-                    <p className="text-gray-300 mb-4">
-                      Hey! I'm <a href="https://github.com/lame-o" className="text-blue-400 hover:underline">@lame-o</a> and this app is built on top of my other project 
-                      called <a href="https://github.com/lame-o/schedule-surfer" className="text-blue-400 hover:underline">Schedule Surfer</a>. I wrote it as a Node.js / Playwright scraper that pulls 
-                      data from UCSD's schedule of classes and structures it in a way that's actually usable. The base config is set to pull all data (which is a lot) so use filters when needed.
-                    </p>
-                    <p className="text-gray-300 mb-4">
-                      I've got the data flowing into this <a href="https://airtable.com/app16yB8bHox0EeCj/shrLJUoHNtlYwYf5X" className="text-blue-400 hover:underline">Airtable base</a> with 
-                      some custom views and filters. Check the repo branches if you want to see how I'm querying different stuff.
-                    </p>
-                    <p className="text-gray-300">
-                      UCSD-SitIn is basically a real-time interface for that data - it watches for active lectures and updates live. 
-                      I built this config because I got tired of manually checking when Hip Hop was happening and I wanted to sit in lol
-                    </p>
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <h2 className="text-2xl font-bold text-gray-100 flex items-center gap-2">
-                    <span className="text-blue-400">🚀</span> Future Ideas
-                  </h2>
-                  <div className="bg-gray-700/50 rounded-lg p-6">
-                    <ul className="space-y-3 text-gray-300">
-                      <li className="flex items-start gap-2">
-                        <span className="text-blue-400">•</span>
-                        <span>Add some map stuff so you can actually find the building and rooms</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-blue-400">•</span>
-                        <span>Maybe add professor ratings</span>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <h2 className="text-2xl font-bold text-gray-100 flex items-center gap-2">
-                    <span className="text-blue-400">🛠️</span> Tech Stack
-                  </h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="bg-gray-700/50 rounded-lg p-6">
-                      <h3 className="text-lg font-semibold text-blue-400 mb-3">Frontend Stuff</h3>
-                      <ul className="space-y-2 text-gray-300">
-                        <li>Next.js 13</li>
-                        <li>TailwindCSS</li>
-                        <li>HeadlessUI / Shadcn</li>
-                        <li>TypeScript</li>
-                      </ul>
+              ) : activeTab === "Technical" ? (
+                <div className="max-w-5xl mx-auto space-y-8">
+                  <div className="flex justify-between items-center border-b border-gray-700 pb-4">
+                    <div className="flex items-center gap-4">
+                      <h1 className="text-4xl font-bold text-white">Technical Details</h1>
+                      <a href="https://github.com/lame-o/ucsd-sitin" target="_blank" rel="noopener noreferrer" className="text-white hover:text-gray-400 transition-colors">
+                        <svg viewBox="0 0 24 24" className="w-10 h-10 fill-current">
+                          <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                        </svg>
+                      </a>
                     </div>
-                    <div className="bg-gray-700/50 rounded-lg p-6">
-                      <h3 className="text-lg font-semibold text-blue-400 mb-3">Backend Stuff</h3>
-                      <ul className="space-y-2 text-gray-300">
-                        <li>Node.js</li>
-                        <li>Airtable API</li>
-                        <li>Schedule Surfer</li>
-                        <li>WebSocket</li>
-                      </ul>
+                  </div>
+
+                  <div className="bg-gray-800/50 backdrop-blur rounded-lg p-10 space-y-10">
+                    <div className="space-y-4">
+                      <h2 className="text-2xl font-bold text-gray-100 flex items-center gap-2">
+                        <span className="text-blue-400">🌊</span> Where This Came From
+                      </h2>
+                      <div className="bg-gray-700/50 rounded-lg p-6">
+                        <p className="text-gray-300 mb-4">
+                          Hey! I'm <a href="https://github.com/lame-o" className="text-blue-400 hover:underline">Liam</a> and this app is built on top of my other project 
+                          called <a href="https://github.com/lame-o/schedule-surfer" className="text-blue-400 hover:underline">ScheduleSurfer</a>. I wrote it as a Node.js / Playwright scraper that pulls 
+                          data from UCSD's schedule of classes and structures it in a way that's actually usable. The base config is set to pull all data (which is a lot) so use filters when needed.
+                        </p>
+                        <p className="text-gray-300 mb-4">
+                          The data goes to a <a href="https://airtable.com/app16yB8bHox0EeCj/shrLJUoHNtlYwYf5X" className="text-blue-400 hover:underline">Airtable base</a> with 
+                          some custom views and filters. Check the repo branches if you want to see how I'm querying different stuff.
+                        </p>
+                        <p className="text-gray-300">
+                          UCSD-SitIn is basically a real-time interface for that data - it watches for active lectures and updates live. 
+                          I built this config because I got tired of manually checking when Hip Hop was happening and I wanted to sit in lol
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <h2 className="text-2xl font-bold text-gray-100 flex items-center gap-2">
+                        <span className="text-blue-400">🚀</span> Future Ideas
+                      </h2>
+                      <div className="bg-gray-700/50 rounded-lg p-6">
+                        <ul className="space-y-3 text-gray-300">
+                          <li className="flex items-start gap-2">
+                            <span className="text-blue-400">•</span>
+                            <span>Integrate with ucsd map to help find building and rooms</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <span className="text-blue-400">•</span>
+                            <span>I might recreate Seascape (RIP) to connect professor & class ratings</span>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <h2 className="text-2xl font-bold text-gray-100 flex items-center gap-2">
+                        <span className="text-blue-400">🛠️</span> Tech Stack
+                      </h2>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="bg-gray-700/50 rounded-lg p-6">
+                          <h3 className="text-lg font-semibold text-blue-400 mb-3">Frontend Stuff</h3>
+                          <ul className="space-y-2 text-gray-300">
+                            <li>Next.js 13</li>
+                            <li>TailwindCSS</li>
+                            <li>HeadlessUI / Shadcn</li>
+                            <li>TypeScript</li>
+                          </ul>
+                        </div>
+                        <div className="bg-gray-700/50 rounded-lg p-6">
+                          <h3 className="text-lg font-semibold text-blue-400 mb-3">Backend Stuff</h3>
+                          <ul className="space-y-2 text-gray-300">
+                            <li>Node.js</li>
+                            <li>Airtable API</li>
+                            <li>Schedule Surfer</li>
+                            <li>WebSocket</li>
+                          </ul>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
-          ) : (
-            <LectureList 
-              classes={classes} 
-              mode={activeTab === "Course Catalog" ? "catalog" : "live"}
-              onReady={() => setIsComponentReady(true)}
-            />
+              ) : (
+                <LectureList 
+                  classes={classes} 
+                  mode={activeTab === "Course Catalog" ? "catalog" : "live"}
+                  onReady={() => setIsComponentReady(true)}
+                />
+              )}
+            </>
           )}
         </div>
       </div>
