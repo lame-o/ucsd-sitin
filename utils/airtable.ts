@@ -44,20 +44,20 @@ export const getMinifiedRecord = (record: any) => {
 };
 
 export const getMinifiedRecords = (records: any[]) => {
-  return records.map(record => getMinifiedRecord(record));
+  return [...records].map(record => getMinifiedRecord(record));
 };
 
 export const fetchRecords = async () => {
   try {
     console.log('Fetching courses...');
     const courseRecords = await coursesTable.select({}).all();
-    const courses = getMinifiedRecords(courseRecords) as Course[];
+    const courses = getMinifiedRecords([...courseRecords]) as Course[];
     console.log('Courses fetched:', courses.length);
     
     console.log('Fetching sections...');
     // First get all sections to process discussions
     const allSectionRecords = await sectionsTable.select({}).all();
-    const allSections = getMinifiedRecords(allSectionRecords) as Section[];
+    const allSections = getMinifiedRecords([...allSectionRecords]) as Section[];
     
     // Filter for lectures first
     const lectureSections = allSections.filter(section => 
