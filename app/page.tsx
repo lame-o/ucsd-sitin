@@ -97,7 +97,7 @@ export default function Home() {
                   <div className="flex justify-between items-center border-b border-gray-700 pb-4">
                     <div>
                       <h1 className="text-4xl font-bold text-white">About UCSD-SitIn</h1>
-                      <p className="text-gray-400 mt-2">Built by Triton 🐻 for educational purposes</p>
+                      <p className="text-gray-400 mt-2">Built by a Triton 🐻 for educational purposes</p>
                     </div>
                   </div>
 
