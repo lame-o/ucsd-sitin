@@ -46,7 +46,7 @@ The site automatically refreshes to show the latest information:
 - Course information is always current
 - No manual refresh needed
 
-## �️ How It Works
+## 🛠️ How It Works
 
 This application combines several modern technologies to provide real-time lecture information:
 
@@ -55,7 +55,7 @@ This application combines several modern technologies to provide real-time lectu
 - **Data Storage**: Leverages Airtable as a flexible database for course information
 - **Deployment**: Hosted on Vercel for reliable, global access
 
-### Data Flow
+### 🗃️ Data Flow
 
 1. **Course Information**
    - Course details, prerequisites, and descriptions are stored in Airtable
@@ -72,7 +72,7 @@ This application combines several modern technologies to provide real-time lectu
    - Maintains performance even with large datasets
    - Preserves state between refreshes
 
-## �📝 License
+## 📝 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
