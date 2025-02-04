@@ -4,74 +4,77 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.2-blue?style=flat&logo=typescript)](https://www.typescriptlang.org)
 [![TailwindCSS](https://img.shields.io/badge/TailwindCSS-3.3-38bdf8?style=flat&logo=tailwind-css)](https://tailwindcss.com)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
-[![Vercel](https://img.shields.io/badge/Vercel-Deployed-000000?style=flat&logo=vercel)](https://vercel.com)
+[![Vercel](https://img.shields.io/badge/Vercel-Deployed-000000?style=flat&logo=vercel)](https://ucsd-sitin.vercel.app/)
 
 > 🚀 A real-time lecture availability tracker for UCSD students. Find empty seats, discover interesting classes, and make the most of your academic journey!
 
+## 🌐 Live Site
+
+Visit [UCSD Sit-In](https://ucsd-sitin.vercel.app/) to start exploring lectures in real-time!
+
 ## ✨ Features
 
-- 🔍 **Live Lecture Tracking**: Real-time updates of ongoing lectures across campus
-- 📚 **Course Catalog**: Comprehensive view of all available courses
-- ⚡ **Smart Filtering**: Quick subject and time-based filtering
-- 🎯 **Precise Timing**: Accurate PST time tracking for lecture schedules
-- 🏢 **Location Info**: Building and room details at your fingertips
-- 👩‍🏫 **Professor Details**: Know who's teaching before you sit in
-- 🎨 **Modern UI**: Clean, responsive design that works on all devices
+- 🔍 **Live Lecture Tracking**: See which lectures are happening right now across campus
+- 📊 **Seat Availability**: Check if there's space to sit in on a lecture
+- ⚡ **Quick Filters**: Find lectures by subject or time frame
+- 🎯 **Upcoming Classes**: See what's starting soon
+- 📚 **Course Details**: Get instant access to course descriptions and prerequisites
+- 👩‍🏫 **Professor Info**: Know who's teaching each class
+- 🏢 **Location Details**: Find your way with building and room information
+- 🎨 **Modern Interface**: Clean, responsive design that works on all devices
 
-## 🛠️ Tech Stack
+## 💡 How to Use
 
-- **Frontend**: Next.js 13 with App Router
-- **Styling**: TailwindCSS + Shadcn/UI
-- **Database**: Airtable
-- **Deployment**: Vercel
-- **Language**: TypeScript
-- **State Management**: React Hooks
+1. **Live Lectures**
+   - View all currently ongoing lectures
+   - Filter by subject or sort by time remaining
+   - Click on any course for detailed information
 
-## 🚀 Getting Started
+2. **Starting Soon**
+   - Check lectures starting in the next 30 minutes, 1 hour, or 2 hours
+   - Plan ahead and find your next interesting class
 
-1. **Clone and Install**
-   ```bash
-   git clone https://github.com/your-username/ucsd-sitin.git
-   cd ucsd-sitin
-   npm install
-   ```
+3. **Course Catalog**
+   - Browse the complete course listing
+   - Filter by subject and day of the week
+   - Get detailed course descriptions and prerequisites
 
-2. **Set Up Environment**
-   ```bash
-   cp .env.example .env.local
-   # Add your Airtable API keys and other environment variables
-   ```
+## 🔄 Updates
 
-3. **Run Development Server**
-   ```bash
-   npm run dev
-   ```
+The site automatically refreshes to show the latest information:
+- Live lecture status updates every minute
+- Course information is always current
+- No manual refresh needed
 
-4. **Open Browser**
-   Visit [http://localhost:3000](http://localhost:3000) 🎉
+## �️ How It Works
 
-## 🔑 Environment Variables
+This application combines several modern technologies to provide real-time lecture information:
 
-```env
-NEXT_PUBLIC_AIRTABLE_API_KEY=your_api_key
-NEXT_PUBLIC_AIRTABLE_BASE_ID_Courses=your_base_id
-NEXT_PUBLIC_AIRTABLE_BASE_ID_Sections=your_base_id
-NEXT_PUBLIC_AIRTABLE_TABLE_NAME_Courses=your_table_name
-NEXT_PUBLIC_AIRTABLE_TABLE_NAME_Sections=your_table_name
-```
+- **Frontend**: Built with Next.js 13 and TypeScript for a fast, type-safe experience
+- **Styling**: Uses TailwindCSS and Shadcn/UI for a clean, modern interface
+- **Data Storage**: Leverages Airtable as a flexible database for course information
+- **Deployment**: Hosted on Vercel for reliable, global access
 
-## 🤝 Contributing
+### Data Flow
 
-We love contributions! Whether it's bug fixes, new features, or documentation improvements:
+1. **Course Information**
+   - Course details, prerequisites, and descriptions are stored in Airtable
+   - Data is fetched and cached for optimal performance
+   - Updates automatically reflect when changes are made in Airtable
 
-1. Fork the repo
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+2. **Real-time Updates**
+   - The app checks for active lectures every minute
+   - Compares current time against lecture schedules
+   - Automatically refreshes the display without user intervention
 
-## 📝 License
+3. **Smart Filtering**
+   - Client-side filtering for instant response
+   - Maintains performance even with large datasets
+   - Preserves state between refreshes
+
+## �📝 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
+Built with ❤️ for UCSD Students
