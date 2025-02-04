@@ -51,18 +51,18 @@ interface CourseDescription {
   prerequisites: string;
 }
 
-export const getMinifiedRecord = (record: any) => {
+export function getMinifiedRecord(record: any) {
   return {
     id: record.id,
     ...record.fields,
-  };
-};
+  }
+}
 
-export const getMinifiedRecords = (records: any[]) => {
-  return [...records].map(record => getMinifiedRecord(record));
-};
+export function getMinifiedRecords(records: ReadonlyArray<any> | any[]) {
+  return records.map((record) => getMinifiedRecord(record))
+}
 
-export const fetchRecords = async () => {
+export async function fetchRecords() {
   try {
     console.log('Fetching courses...');
     const courseRecords = await coursesTable.select({}).all();
@@ -153,7 +153,7 @@ export const fetchRecords = async () => {
   }
 };
 
-export const fetchCourseDescriptions = async () => {
+export async function fetchCourseDescriptions() {
   try {
     const records = await descriptionsTable.select({}).all();
     const minifiedRecords = getMinifiedRecords(records);
@@ -161,12 +161,12 @@ export const fetchCourseDescriptions = async () => {
     return {
       records: minifiedRecords as CourseDescription[],
       error: null
-    };
+    }
   } catch (error) {
-    console.error('Error fetching course descriptions:', error);
+    console.error('Error fetching course descriptions:', error)
     return {
       records: [],
-      error: 'Error fetching course descriptions'
-    };
+      error: error as Error
+    }
   }
 };
