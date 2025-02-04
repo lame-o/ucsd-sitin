@@ -1,17 +1,23 @@
 import Airtable from 'airtable';
 
-// Create Airtable instance
-const airtable = new Airtable({
+// Create Airtable instances with different API keys
+const mainAirtable = new Airtable({
   apiKey: process.env.NEXT_PUBLIC_AIRTABLE_API_KEY
 });
 
-// Create base instances for Courses and Sections
-const coursesBase = airtable.base(process.env.NEXT_PUBLIC_AIRTABLE_BASE_ID_Courses!);
-const sectionsBase = airtable.base(process.env.NEXT_PUBLIC_AIRTABLE_BASE_ID_Sections!);
+const descriptionsAirtable = new Airtable({
+  apiKey: process.env.NEXT_PUBLIC_AIRTABLE_Descriptions_API_KEY
+});
+
+// Create base instances for Courses, Sections, and Descriptions
+const coursesBase = mainAirtable.base(process.env.NEXT_PUBLIC_AIRTABLE_BASE_ID_Courses!);
+const sectionsBase = mainAirtable.base(process.env.NEXT_PUBLIC_AIRTABLE_BASE_ID_Sections!);
+const descriptionsBase = descriptionsAirtable.base(process.env.NEXT_PUBLIC_AIRTABLE_BASE_ID_Descriptions!);
 
 // Get table references
 export const sectionsTable = sectionsBase(process.env.NEXT_PUBLIC_AIRTABLE_TABLE_NAME_Sections!);
 export const coursesTable = coursesBase(process.env.NEXT_PUBLIC_AIRTABLE_TABLE_NAME_Courses!);
+export const descriptionsTable = descriptionsBase(process.env.NEXT_PUBLIC_AIRTABLE_TABLE_NAME_Descriptions!);
 
 interface Course {
   id: string;
@@ -34,6 +40,15 @@ interface Section {
   'Available Seats': number;
   'Seat Limit': string;
   'Days': string;
+}
+
+interface CourseDescription {
+  id: string;
+  code: string;
+  title: string;
+  units: number;
+  description: string;
+  prerequisites: string;
 }
 
 export const getMinifiedRecord = (record: any) => {
@@ -135,5 +150,23 @@ export const fetchRecords = async () => {
       return { records: [], error: error.message };
     }
     return { records: [], error: 'Error fetching data' };
+  }
+};
+
+export const fetchCourseDescriptions = async () => {
+  try {
+    const records = await descriptionsTable.select({}).all();
+    const minifiedRecords = getMinifiedRecords(records);
+    
+    return {
+      records: minifiedRecords as CourseDescription[],
+      error: null
+    };
+  } catch (error) {
+    console.error('Error fetching course descriptions:', error);
+    return {
+      records: [],
+      error: 'Error fetching course descriptions'
+    };
   }
 };

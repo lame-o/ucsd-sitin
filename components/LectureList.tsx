@@ -21,6 +21,8 @@ import {
 } from '@heroicons/react/24/outline';
 import { BoltIcon } from '@heroicons/react/24/solid';
 import Image from 'next/image';
+import CourseTooltip from './CourseTooltip';
+import { fetchCourseDescriptions } from '@/utils/airtable';
 
 interface ClassItem {
   id: string
@@ -40,6 +42,11 @@ interface LectureListProps {
   classes: ClassItem[]
   mode?: 'live' | 'catalog'
   onReady?: () => void
+}
+
+interface CourseDescription {
+  code: string
+  description: string
 }
 
 export default function LectureList({ classes, mode = 'live', onReady }: LectureListProps) {
@@ -62,6 +69,7 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
   const [selectedCatalogSubject, setSelectedCatalogSubject] = useState<string>('');
   const [selectedCatalogDay, setSelectedCatalogDay] = useState<string>('');
   const [sortByRecent, setSortByRecent] = useState(false);
+  const [courseDescriptions, setCourseDescriptions] = useState<Record<string, CourseDescription>>({});
 
   // Extract all unique subjects and create subject descriptions
   const { groupedSubjects, subjectDescriptions } = useMemo(() => {
@@ -194,6 +202,22 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
       subjectDescriptions: descriptions
     };
   }, [uniqueClasses]);
+
+  // Fetch course descriptions once when component mounts
+  useEffect(() => {
+    const loadDescriptions = async () => {
+      const { records, error } = await fetchCourseDescriptions();
+      if (!error && records) {
+        const descriptionsMap = records.reduce((acc, desc) => {
+          acc[desc.code] = desc;
+          return acc;
+        }, {} as Record<string, CourseDescription>);
+        setCourseDescriptions(descriptionsMap);
+      }
+    };
+    
+    loadDescriptions();
+  }, []); // Only runs once on mount
 
   // Update time every minute
   useEffect(() => {
@@ -389,6 +413,9 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
     const cellClass = `flex items-center min-h-full gap-2 ${status === 'live' ? 'text-white font-medium' : 'text-gray-300'}`;
     const iconClass = `w-5 h-5 ${status === 'live' ? 'text-gray-300' : 'text-gray-400'} flex-shrink-0`;
     
+    // Get course description if available
+    const description = courseDescriptions[classItem.courseCode] || null;
+    
     return (
       <div
         key={classItem.id}
@@ -397,7 +424,9 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
         <div className={cellClass}>
           <div className="flex items-center gap-3">
             <div className={`w-2 h-2 rounded-full ${dotColor} ${dotAnimation} flex-shrink-0`} />
-            <span className="truncate">{classItem.courseCode} • {classItem.courseName}</span>
+            <CourseTooltip description={description}>
+              <span className="truncate cursor-help">{classItem.courseCode} • {classItem.courseName}</span>
+            </CourseTooltip>
           </div>
         </div>
         <div className={cellClass}>
