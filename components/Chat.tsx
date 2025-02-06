@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { BotMessageSquare, Send } from 'lucide-react'
+import { Send } from 'lucide-react'
 
 export default function Chat() {
   const [messages, setMessages] = useState<Array<{ role: 'user' | 'assistant', content: string }>>([])
