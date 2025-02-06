@@ -366,6 +366,19 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
       : upcomingClasses;
   }, [upcomingClasses, selectedUpcomingSubject]);
 
+  // Add a memoized set of subjects that have live lectures
+  const liveSubjectsSet = useMemo(() => {
+    const subjects = new Set<string>();
+    uniqueClasses.forEach(c => {
+      const [startTime, endTime] = c.time.split('-');
+      if (isClassLive(startTime, endTime, c.days)) {
+        const subject = c.courseCode.match(/^[A-Z]+/)?.[0] || '';
+        if (subject) subjects.add(subject);
+      }
+    });
+    return subjects;
+  }, [uniqueClasses]);
+
   const getTimeUntilStart = (startTime: string) => {
     const now = new Date();
     const startDate = parseTime(startTime);
@@ -659,7 +672,7 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
                       </option>
                     ) : subject === '' ? null : (
                       <option key={subject} value={subject}>
-                        {subject}{subjectDescriptions[subject] ? ` - ${subjectDescriptions[subject]}` : ''}
+                        {subject}{subjectDescriptions[subject] ? ` - ${subjectDescriptions[subject]}` : ''} {liveSubjectsSet.has(subject) ? '🟢' : ''}
                       </option>
                     )
                   )}
