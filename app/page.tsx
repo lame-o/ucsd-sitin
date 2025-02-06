@@ -104,11 +104,12 @@ export default function Home() {
                   <div className="bg-gray-800/50 backdrop-blur rounded-lg p-10 space-y-10">
                     <div className="space-y-4">
                       <p className="text-gray-300 text-lg leading-relaxed">
-                        As a UCSD student, I always wanted a way to explore 
+                      <span className="bg-gradient-to-r from-yellow-400 to-blue-400 text-transparent bg-clip-text text-xl font-extrabold italic">THERE ARE A LOT OF COOL CLASSES AND SUBJECTS TO EXPLORE AT UCSD! TAKE ADVANTAGE!</span><br /><br />
+                        As a UCSD student, I always wanted a way to explore
                         different classes and sit-in on subjects I never got the chance to with my major.<br /><br />
                         That&apos;s why I built UCSD-SitIn, to make it super easy to find and attend available lectures 
                         across campus. Whether you&apos;re trying to catch up on missed content, explore potential majors, or just learn 
-                        something new, this tool helps you find the right lecture at the right time.
+                        something new, this tool helps you find the right lecture at the right time.<br /><br />
                       </p>
                     </div>
 
@@ -226,10 +227,6 @@ export default function Home() {
                           called <a href="https://github.com/lame-o/schedule-surfer" className="text-blue-400 hover:underline">ScheduleSurfer</a>. I wrote it as a Node.js / Playwright scraper that pulls 
                           data from UCSD&apos;s schedule of classes and structures it in a way that&apos;s actually usable. The base config is set to pull all data (which is a lot) so use filters when needed.
                         </p>
-                        <p className="text-gray-300 mb-4">
-                          The data goes to a <a href="https://airtable.com/app16yB8bHox0EeCj/shrLJUoHNtlYwYf5X" className="text-blue-400 hover:underline">Airtable base</a> with 
-                          some custom views and filters. Check the repo branches if you want to see how I&apos;m querying different stuff.
-                        </p>
                         <p className="text-gray-300">
                           UCSD-SitIn is basically a real-time interface for that data - it watches for active lectures and updates live. 
                           I built this config because I got tired of manually checking when Hip Hop was happening and I wanted to sit in lol
@@ -252,32 +249,6 @@ export default function Home() {
                             <span>I might recreate Seascape (RIP) to connect professor & class ratings</span>
                           </li>
                         </ul>
-                      </div>
-                    </div>
-
-                    <div className="space-y-4">
-                      <h2 className="text-2xl font-bold text-gray-100 flex items-center gap-2">
-                        <span className="text-blue-400">🛠️</span> Tech Stack
-                      </h2>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="bg-gray-700/50 rounded-lg p-6">
-                          <h3 className="text-lg font-semibold text-blue-400 mb-3">Frontend Stuff</h3>
-                          <ul className="space-y-2 text-gray-300">
-                            <li>Next.js 13</li>
-                            <li>TailwindCSS</li>
-                            <li>HeadlessUI / Shadcn</li>
-                            <li>TypeScript</li>
-                          </ul>
-                        </div>
-                        <div className="bg-gray-700/50 rounded-lg p-6">
-                          <h3 className="text-lg font-semibold text-blue-400 mb-3">Backend Stuff</h3>
-                          <ul className="space-y-2 text-gray-300">
-                            <li>Node.js</li>
-                            <li>Airtable API</li>
-                            <li>Schedule Surfer</li>
-                            <li>WebSocket</li>
-                          </ul>
-                        </div>
                       </div>
                     </div>
                   </div>

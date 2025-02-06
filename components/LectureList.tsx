@@ -377,7 +377,7 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
       }
     });
     return subjects;
-  }, [uniqueClasses]);
+  }, [uniqueClasses, currentTime]);
 
   const getTimeUntilStart = (startTime: string) => {
     const now = new Date();
