@@ -6,6 +6,7 @@ import Sidebar from "@/components/Sidebar"
 import { fetchRecords } from "@/utils/airtable"
 import Image from 'next/image'
 import Loader from '@/components/Loader'
+import Chat from '@/components/Chat'
 
 interface ClassItem {
   id: string
@@ -85,7 +86,7 @@ export default function Home() {
       <Sidebar activeTab={activeTab} setActiveTab={handleTabClick} />
       <div className="flex-1 p-8">
         <div className="max-w-7xl mx-auto">
-          {(loading || isInitialLoad) && activeTab !== 'About' && activeTab !== 'Technical' ? (
+          {(loading || isInitialLoad) && activeTab !== 'About' && activeTab !== 'Technical' && activeTab !== 'Chat' ? (
             <div className="flex flex-col items-center justify-center h-64">
               <Loader />
               <div className="text-gray-400 mt-4">Getting Ready!</div>
@@ -253,6 +254,8 @@ export default function Home() {
                     </div>
                   </div>
                 </div>
+              ) : activeTab === "Chat" ? (
+                <Chat />
               ) : (
                 <LectureList 
                   classes={classes} 

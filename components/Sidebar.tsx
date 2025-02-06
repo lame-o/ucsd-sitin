@@ -2,13 +2,14 @@
 
 import { useEffect, useRef, useState } from "react"
 import { gsap } from "gsap"
-import { PlayCircle, BookOpen, Info, Cog, ChevronLeft } from "lucide-react"
+import { PlayCircle, Library, Info, Cog, ChevronLeft, BotMessageSquare, Tv } from "lucide-react"
 import { cn } from "@/lib/utils"
 import Image from 'next/image';
 
 const tabs = [
-  { name: "Live Lectures", icon: PlayCircle },
-  { name: "Course Catalog", icon: BookOpen },
+  { name: "Live Lectures", icon: Tv },
+  { name: "Course Catalog", icon: Library },
+  { name: "Chat", icon: BotMessageSquare },
   { name: "About", icon: Info },
   { name: "Technical", icon: Cog },
 ]
