@@ -3,59 +3,21 @@ import { NextResponse } from 'next/server';
 import { Pinecone } from '@pinecone-database/pinecone';
 import OpenAI from 'openai';
 
-// Helper functions for day and time processing
-function expandDays(days: string): string[] {
-  const dayMap: { [key: string]: string } = {
-    'M': 'Monday',
-    'Tu': 'Tuesday',
-    'W': 'Wednesday',
-    'Th': 'Thursday',
-    'F': 'Friday'
-  };
-  const expanded = [];
-  let i = 0;
-  while (i < days.length) {
-    if (i < days.length - 1 && days.substring(i, i + 2) === 'Tu') {
-      expanded.push('Tuesday');
-      i += 2;
-    } else if (i < days.length - 1 && days.substring(i, i + 2) === 'Th') {
-      expanded.push('Thursday');
-      i += 2;
-    } else {
-      const current = days[i];
-      if (dayMap[current]) {
-        expanded.push(dayMap[current]);
-      }
-      i++;
-    }
-  }
-  return expanded;
-}
-
-function getTimeOfDay(time: string): string {
-  const [timeStr, ampm] = time.split(/([ap])/i);
-  const [hours] = timeStr.split(':').map(Number);
-  const isPM = ampm.toLowerCase() === 'p';
-  const hour24 = isPM ? (hours === 12 ? 12 : hours + 12) : (hours === 12 ? 0 : hours);
-  
-  if (hour24 < 12) return 'morning';
-  if (hour24 < 17) return 'afternoon';
-  return 'evening';
-}
-
+// Helper functions for time processing
 function parseTimeToMinutes(timeStr: string): number {
   const match = timeStr.match(/(\d+)(?::(\d+))?\s*([ap]m?)/i);
   if (!match) return -1;
   
-  let [_, hours, minutes = '0', ampm] = match;
-  let hrs = parseInt(hours);
+  const [_, hours, minutes = '0', ampm] = match;
+  const baseHours = parseInt(hours);
   const mins = parseInt(minutes);
   const isPM = ampm.toLowerCase().startsWith('p');
   
-  if (isPM && hrs !== 12) hrs += 12;
-  if (!isPM && hrs === 12) hrs = 0;
+  let adjustedHours = baseHours;
+  if (isPM && baseHours !== 12) adjustedHours += 12;
+  if (!isPM && baseHours === 12) adjustedHours = 0;
   
-  return hrs * 60 + mins;
+  return adjustedHours * 60 + mins;
 }
 
 function extractTimeConstraints(query: string): { before?: number; after?: number } {
@@ -119,6 +81,16 @@ const openai = new OpenAI({
 const pinecone = new Pinecone({
   apiKey: process.env.PINECONE_API_KEY!
 });
+
+interface ChatMessage {
+  role: string;
+  content: string;
+}
+
+interface ChatResponse {
+  messages: ChatMessage[];
+  results: unknown[];
+}
 
 export async function POST(req: Request) {
   try {

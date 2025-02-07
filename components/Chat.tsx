@@ -99,9 +99,9 @@ export default function Chat() {
               <p>Ask me about courses you might be interested in!</p>
               <p className="text-sm">Try asking about:</p>
               <ul className="text-sm text-gray-500">
-                <li>"Show me computer science classes on Wednesday afternoons"</li>
-                <li>"What music classes are available in the morning?"</li>
-                <li>"Find large psychology lectures with available seats"</li>
+                <li>&quot;Show me computer science classes on Wednesday afternoons&quot;</li>
+                <li>&quot;What music classes are available in the morning?&quot;</li>
+                <li>&quot;Find large psychology lectures with available seats&quot;</li>
               </ul>
             </div>
           ) : (
