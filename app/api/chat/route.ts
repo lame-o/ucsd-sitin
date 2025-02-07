@@ -82,30 +82,6 @@ const pinecone = new Pinecone({
   apiKey: process.env.PINECONE_API_KEY!
 });
 
-interface ChatMessage {
-  role: string;
-  content: string;
-}
-
-interface PineconeMetadata {
-  code: string;
-  title: string;
-  expandedDays?: string[];
-  days: string;
-  time: string;
-  building: string;
-  room: string;
-  instructor: string;
-  seatLimit: number;
-  description: string;
-  prerequisites?: string;
-  department: string;
-  units: string | number;
-  timeOfDay?: string;
-  timeStart?: number;
-  timeEnd?: number;
-}
-
 interface FilterConditions {
   expandedDays?: { $in: string[] };
   timeOfDay?: string;
@@ -197,8 +173,23 @@ export async function POST(req: Request) {
 
     // Format context with more detailed information
     const context = results.matches.map(match => {
-      // Use Record<string, any> to maintain exact same runtime behavior
-      const metadata = match.metadata as Record<string, any>;
+      // Use unknown first to allow proper type assertion
+      const metadata = match.metadata as {
+        [key: string]: unknown;
+        expandedDays?: string[];
+        days: string;
+        time: string;
+        code: string;
+        title: string;
+        building: string;
+        room: string;
+        instructor: string;
+        seatLimit: number;
+        description: string;
+        prerequisites?: string;
+        department: string;
+        units: string | number;
+      };
       const score = match.score ? Math.round(match.score * 100) : 0;
       return `
 Course: ${metadata.code}: ${metadata.title}
