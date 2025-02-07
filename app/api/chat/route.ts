@@ -43,6 +43,75 @@ function getTimeOfDay(time: string): string {
   return 'evening';
 }
 
+function parseTimeToMinutes(timeStr: string): number {
+  const match = timeStr.match(/(\d+)(?::(\d+))?\s*([ap]m?)/i);
+  if (!match) return -1;
+  
+  let [_, hours, minutes = '0', ampm] = match;
+  let hrs = parseInt(hours);
+  const mins = parseInt(minutes);
+  const isPM = ampm.toLowerCase().startsWith('p');
+  
+  if (isPM && hrs !== 12) hrs += 12;
+  if (!isPM && hrs === 12) hrs = 0;
+  
+  return hrs * 60 + mins;
+}
+
+function extractTimeConstraints(query: string): { before?: number; after?: number } {
+  const constraints: { before?: number; after?: number } = {};
+  
+  // Before time patterns
+  const beforePatterns = [
+    /before\s+(\d+(?::\d+)?\s*[ap]m?)/i,
+    /ends?\s+before\s+(\d+(?::\d+)?\s*[ap]m?)/i,
+    /earlier\s+than\s+(\d+(?::\d+)?\s*[ap]m?)/i
+  ];
+  
+  // After time patterns
+  const afterPatterns = [
+    /after\s+(\d+(?::\d+)?\s*[ap]m?)/i,
+    /starts?\s+after\s+(\d+(?::\d+)?\s*[ap]m?)/i,
+    /later\s+than\s+(\d+(?::\d+)?\s*[ap]m?)/i
+  ];
+  
+  // Check before patterns
+  for (const pattern of beforePatterns) {
+    const match = query.match(pattern);
+    if (match) {
+      constraints.before = parseTimeToMinutes(match[1]);
+      break;
+    }
+  }
+  
+  // Check after patterns
+  for (const pattern of afterPatterns) {
+    const match = query.match(pattern);
+    if (match) {
+      constraints.after = parseTimeToMinutes(match[1]);
+      break;
+    }
+  }
+  
+  return constraints;
+}
+
+function extractSizePreference(query: string): { min?: number; max?: number } {
+  const queryLower = query.toLowerCase();
+  
+  // Define size thresholds
+  const SMALL_CLASS = 30;  // Classes <= 30 seats
+  const LARGE_CLASS = 100; // Classes >= 100 seats
+  
+  if (queryLower.includes('small') || queryLower.includes('tiny')) {
+    return { max: SMALL_CLASS };
+  }
+  if (queryLower.includes('large') || queryLower.includes('big')) {
+    return { min: LARGE_CLASS };
+  }
+  return {};
+}
+
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 });
@@ -62,6 +131,10 @@ export async function POST(req: Request) {
     const queryLower = query.toLowerCase();
     let timeFilter: string | undefined;
     let dayFilter: string | undefined;
+    
+    // Extract time constraints and size preference
+    const timeConstraints = extractTimeConstraints(query);
+    const sizePreference = extractSizePreference(query);
 
     // Extract time of day from query
     for (const time of timeKeywords) {
@@ -85,6 +158,10 @@ export async function POST(req: Request) {
       Query: ${query}
       ${timeFilter ? `Time of day: ${timeFilter}` : ''}
       ${dayFilter ? `Day of week: ${dayFilter}` : ''}
+      ${timeConstraints.before ? `Ends before: ${Math.floor(timeConstraints.before/60)}:${(timeConstraints.before%60).toString().padStart(2, '0')}` : ''}
+      ${timeConstraints.after ? `Starts after: ${Math.floor(timeConstraints.after/60)}:${(timeConstraints.after%60).toString().padStart(2, '0')}` : ''}
+      ${sizePreference.min ? `Minimum class size: ${sizePreference.min}` : ''}
+      ${sizePreference.max ? `Maximum class size: ${sizePreference.max}` : ''}
     `.trim();
 
     // Generate embedding for the enhanced query
@@ -101,6 +178,18 @@ export async function POST(req: Request) {
     }
     if (timeFilter) {
       filterConditions.timeOfDay = timeFilter;
+    }
+    if (timeConstraints.before !== undefined) {
+      filterConditions.timeEnd = { $lte: timeConstraints.before };
+    }
+    if (timeConstraints.after !== undefined) {
+      filterConditions.timeStart = { $gte: timeConstraints.after };
+    }
+    if (sizePreference.min !== undefined) {
+      filterConditions.seatLimit = { $gte: sizePreference.min };
+    }
+    if (sizePreference.max !== undefined) {
+      filterConditions.seatLimit = { $lte: sizePreference.max };
     }
 
     // Search Pinecone with filters
@@ -121,7 +210,7 @@ Course: ${metadata.code}: ${metadata.title}
 Schedule: Meets on ${metadata.expandedDays?.join(', ') || metadata.days} at ${metadata.time}
 Location: ${metadata.building} ${metadata.room}
 Instructor: ${metadata.instructor}
-Availability: ${metadata.availableSeats}/${metadata.seatLimit} seats available
+Class Size: ${metadata.seatLimit} seats
 Description: ${metadata.description}
 Prerequisites: ${metadata.prerequisites || 'None'}
 Department: ${metadata.department}
@@ -140,7 +229,11 @@ Relevance Score: ${score}%
                    Only reference courses mentioned in the context. If you're not sure, say so.
                    Be concise but informative. Format your responses in a conversational way.
                    When discussing course schedules, always mention both the days and times.
-                   When discussing course availability, mention the number of seats available.
+                   When discussing class sizes:
+                   - Consider classes with 100+ seats as large
+                   - Consider classes with 30 or fewer seats as small
+                   - Always mention the exact number of seats when discussing class size
+                   Do not mention waitlists or seat availability - only state the total class size.
                    Context:\n${context}`
         },
         { role: "user", content: query }

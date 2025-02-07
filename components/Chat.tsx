@@ -1,12 +1,30 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Send } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
+
+// Message type with optional metadata
+interface Message {
+  role: 'user' | 'assistant'
+  content: string
+  timestamp?: Date
+}
 
 export default function Chat() {
-  const [messages, setMessages] = useState<Array<{ role: 'user' | 'assistant', content: string }>>([])
+  const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  // Auto-scroll to bottom when new messages arrive
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
+
+  useEffect(() => {
+    scrollToBottom()
+  }, [messages])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -14,8 +32,12 @@ export default function Chat() {
 
     try {
       setIsLoading(true)
-      // Add user message
-      setMessages(prev => [...prev, { role: 'user', content: input }])
+      // Add user message with timestamp
+      setMessages(prev => [...prev, { 
+        role: 'user', 
+        content: input,
+        timestamp: new Date()
+      }])
       setInput('')
 
       // Call our API route
@@ -33,21 +55,32 @@ export default function Chat() {
         throw new Error(data.error || 'Failed to get response');
       }
 
-      // Add assistant's response
+      // Add assistant's response with timestamp
       setMessages(prev => [...prev, { 
         role: 'assistant', 
-        content: data.response 
+        content: data.response,
+        timestamp: new Date()
       }]);
 
     } catch (error) {
       console.error('Error:', error);
       setMessages(prev => [...prev, { 
         role: 'assistant', 
-        content: "I apologize, but I encountered an error while processing your request. Please try again."
+        content: "I apologize, but I encountered an error while processing your request. Please try again.",
+        timestamp: new Date()
       }]);
     } finally {
       setIsLoading(false)
     }
+  }
+
+  // Format timestamp
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString('en-US', { 
+      hour: 'numeric', 
+      minute: '2-digit',
+      hour12: true 
+    })
   }
 
   return (
@@ -60,44 +93,81 @@ export default function Chat() {
       </div>
 
       <div className="bg-gray-800/50 backdrop-blur rounded-lg p-6 min-h-[600px] flex flex-col">
-        <div className="flex-1 space-y-4 mb-4 overflow-y-auto">
+        <div className="flex-1 space-y-4 mb-4 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent">
           {messages.length === 0 ? (
-            <div className="text-gray-400 text-center py-8">
-              Ask me about courses you might be interested in!
+            <div className="text-gray-400 text-center py-8 space-y-2">
+              <p>Ask me about courses you might be interested in!</p>
+              <p className="text-sm">Try asking about:</p>
+              <ul className="text-sm text-gray-500">
+                <li>"Show me computer science classes on Wednesday afternoons"</li>
+                <li>"What music classes are available in the morning?"</li>
+                <li>"Find large psychology lectures with available seats"</li>
+              </ul>
             </div>
           ) : (
             messages.map((message, index) => (
               <div
                 key={index}
-                className={`p-4 rounded-lg ${
-                  message.role === 'user'
-                    ? 'bg-blue-600/20 ml-8'
-                    : 'bg-gray-700/50 mr-8'
+                className={`flex ${
+                  message.role === 'user' ? 'justify-end' : 'justify-start'
                 }`}
               >
-                <p className="text-gray-200">{message.content}</p>
+                <div
+                  className={`max-w-[80%] p-4 rounded-lg ${
+                    message.role === 'user'
+                      ? 'bg-blue-600/20 rounded-br-none'
+                      : 'bg-gray-700/50 rounded-bl-none'
+                  }`}
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className={`text-xs ${
+                      message.role === 'user' ? 'text-blue-300' : 'text-green-300'
+                    }`}>
+                      {message.role === 'user' ? 'You' : 'Assistant'}
+                    </span>
+                    {message.timestamp && (
+                      <span className="text-xs text-gray-500">
+                        {formatTime(message.timestamp)}
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-gray-200 prose prose-invert max-w-none">
+                    {message.content.split('\n').map((line, i) => (
+                      <p key={i} className="my-1">
+                        {line}
+                      </p>
+                    ))}
+                  </div>
+                </div>
               </div>
             ))
           )}
+          <div ref={messagesEndRef} />
         </div>
 
-        <form onSubmit={handleSubmit} className="flex gap-2">
+        <form onSubmit={handleSubmit} className="flex gap-2 relative">
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask about courses..."
-            className="flex-1 bg-gray-700/50 text-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-1 bg-gray-700/50 text-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
             disabled={isLoading}
           />
           <button
             type="submit"
             disabled={isLoading}
-            className={`${
-              isLoading ? 'bg-blue-500/50' : 'bg-blue-600'
-            } text-white rounded-lg px-4 py-2 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500`}
+            className={`absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-md transition-colors ${
+              isLoading 
+                ? 'text-gray-400 cursor-not-allowed' 
+                : 'text-blue-400 hover:text-blue-300 hover:bg-blue-500/10'
+            }`}
           >
-            <Send className="h-5 w-5" />
+            {isLoading ? (
+              <Loader2 className="h-5 w-5 animate-spin" />
+            ) : (
+              <Send className="h-5 w-5" />
+            )}
           </button>
         </form>
       </div>
