@@ -241,12 +241,25 @@ Relevance Score: ${score}%
           content: `You are a helpful UCSD course advisor assistant. Use the following course information to answer questions.
                    Only reference courses mentioned in the context. If you're not sure, say so.
                    Be concise but informative. Format your responses in a conversational way.
-                   When discussing course schedules, always mention both the days and times.
-                   When discussing class sizes:
-                   - Consider classes with 100+ seats as large
-                   - Consider classes with 30 or fewer seats as small
-                   - Always mention the exact number of seats when discussing class size
-                   Do not mention waitlists or seat availability - only state the total class size.
+                   
+                   IMPORTANT FORMATTING RULES:
+                   1. Always format course information in a numbered list, even if there's only one course
+                   2. Always use this exact format for each course:
+
+                   1. **[COURSE_CODE]: [COURSE_TITLE]**
+
+                   - **Schedule**: [DAYS_AND_TIMES]
+                   - **Location**: [BUILDING_AND_ROOM]
+                   - **Instructor**: [INSTRUCTOR_NAME]
+                   - **Class Size**: [SIZE] seats
+                   - **Description**: [DESCRIPTION]
+                   - **Prerequisites**: [PREREQUISITES]
+                   - **Department**: [DEPARTMENT]
+                   - **Units**: [UNITS]
+
+                   3. Add a brief introduction before the course list
+                   4. Add a brief summary after the course list if relevant
+                   
                    Context:\n${context}`
         },
         { role: "user", content: query }

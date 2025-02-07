@@ -132,11 +132,55 @@ export default function Chat() {
                     )}
                   </div>
                   <div className="text-gray-200 prose prose-invert max-w-none">
-                    {message.content.split('\n').map((line, i) => (
-                      <p key={i} className="my-1">
-                        {line}
-                      </p>
-                    ))}
+                    {message.role === 'assistant' ? (
+                      <div>
+                        {message.content.split('\n\n').map((block, blockIndex) => {
+                          // Check if this block is a course listing (starts with a number and has **)
+                          if (block.match(/^\d+\.\s+\*\*/)) {
+                            const lines = block.split('\n').map(l => l.trim());
+                            const titleMatch = lines[0].match(/\*\*(.*?)\*\*/);
+                            const title = titleMatch ? titleMatch[1] : '';
+                            
+                            // Extract details from the bullet points
+                            const details = lines.slice(1)
+                              .filter(l => l.startsWith('-'))
+                              .map(l => {
+                                const [label, ...valueParts] = l.replace(/^-\s+\*\*/, '').split(':');
+                                return {
+                                  label: label.replace(/\*\*/g, ''),
+                                  value: valueParts.join(':').trim()
+                                };
+                              });
+                            
+                            return (
+                              <div key={blockIndex} className="bg-gray-800/50 rounded-lg p-4 mb-4 shadow-lg border border-gray-700">
+                                <h3 className="text-xl font-bold text-blue-400 mb-4">{title}</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                  {details.map((detail, i) => (
+                                    <div key={i} className={`${detail.label === 'Description' || detail.label === 'Prerequisites' ? 'col-span-2' : ''}`}>
+                                      <span className="block text-blue-300 text-sm mb-1">{detail.label}</span>
+                                      <span className="block text-gray-200">{detail.value}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            );
+                          }
+                          // Regular text block (like introductions or summaries)
+                          return (
+                            <p key={blockIndex} className="mb-4">
+                              {block}
+                            </p>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      message.content.split('\n').map((line, i) => (
+                        <p key={i} className="my-1">
+                          {line}
+                        </p>
+                      ))
+                    )}
                   </div>
                 </div>
               </div>
