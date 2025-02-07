@@ -92,6 +92,23 @@ interface FilterConditions {
   seatLimit?: { $gte: number } | { $lte: number };
 }
 
+interface CourseMetadata {
+  expandedDays?: string[];
+  days: string;
+  time: string;
+  code: string;
+  title: string;
+  building: string;
+  room: string;
+  instructor: string;
+  seatLimit: number;
+  description: string;
+  prerequisites?: string;
+  department: string;
+  units: string | number;
+  [key: string]: unknown;
+}
+
 export async function POST(req: Request) {
   try {
     const { query } = await req.json();
@@ -179,8 +196,8 @@ export async function POST(req: Request) {
         queryLower.includes('large')   ||
         queryLower.includes('big')) {
       results.matches.sort((a, b) => {
-        const seatA = (a.metadata as any).seatLimit || 0;
-        const seatB = (b.metadata as any).seatLimit || 0;
+        const seatA = (a.metadata as CourseMetadata).seatLimit || 0;
+        const seatB = (b.metadata as CourseMetadata).seatLimit || 0;
         return seatB - seatA;
       });
     }
@@ -188,8 +205,8 @@ export async function POST(req: Request) {
     // Sort in ascending order for small classes
     if (queryLower.includes('small') || queryLower.includes('tiny')) {
       results.matches.sort((a, b) => {
-        const seatA = (a.metadata as any).seatLimit || 0;
-        const seatB = (b.metadata as any).seatLimit || 0;
+        const seatA = (a.metadata as CourseMetadata).seatLimit || 0;
+        const seatB = (b.metadata as CourseMetadata).seatLimit || 0;
         return seatA - seatB;
       });
     }
@@ -199,23 +216,7 @@ export async function POST(req: Request) {
 
     // Format context with more detailed information
     const context = results.matches.map(match => {
-      // Use unknown first to allow proper type assertion
-      const metadata = match.metadata as {
-        [key: string]: unknown;
-        expandedDays?: string[];
-        days: string;
-        time: string;
-        code: string;
-        title: string;
-        building: string;
-        room: string;
-        instructor: string;
-        seatLimit: number;
-        description: string;
-        prerequisites?: string;
-        department: string;
-        units: string | number;
-      };
+      const metadata = match.metadata as CourseMetadata;
       const score = match.score ? Math.round(match.score * 100) : 0;
       return `
 Course: ${metadata.code}: ${metadata.title}
