@@ -1,4 +1,6 @@
 // app/api/chat/route.ts
+export const runtime = 'edge';
+
 import { NextResponse } from 'next/server';
 import { Pinecone } from '@pinecone-database/pinecone';
 import OpenAI from 'openai';
@@ -166,10 +168,34 @@ export async function POST(req: Request) {
     const index = pinecone.index(process.env.PINECONE_INDEX_NAME!);
     const results = await index.query({
       vector: queryEmbedding,
-      topK: 5,
+      topK: 10, // Get more results for better sorting
       filter: Object.keys(filterConditions).length > 0 ? filterConditions : undefined,
       includeMetadata: true
     });
+
+    // Sort results by seat limit if query asks for biggest/largest/large classes
+    if (queryLower.includes('biggest') || 
+        queryLower.includes('largest') || 
+        queryLower.includes('large')   ||
+        queryLower.includes('big')) {
+      results.matches.sort((a, b) => {
+        const seatA = (a.metadata as any).seatLimit || 0;
+        const seatB = (b.metadata as any).seatLimit || 0;
+        return seatB - seatA;
+      });
+    }
+
+    // Sort in ascending order for small classes
+    if (queryLower.includes('small') || queryLower.includes('tiny')) {
+      results.matches.sort((a, b) => {
+        const seatA = (a.metadata as any).seatLimit || 0;
+        const seatB = (b.metadata as any).seatLimit || 0;
+        return seatA - seatB;
+      });
+    }
+
+    // Always limit to top 3 results for display
+    results.matches = results.matches.slice(0, 3);
 
     // Format context with more detailed information
     const context = results.matches.map(match => {
