@@ -8,7 +8,7 @@ function parseTimeToMinutes(timeStr: string): number {
   const match = timeStr.match(/(\d+)(?::(\d+))?\s*([ap]m?)/i);
   if (!match) return -1;
   
-  const [_, hours, minutes = '0', ampm] = match;
+  const [, hours, minutes = '0', ampm] = match;
   const baseHours = parseInt(hours);
   const mins = parseInt(minutes);
   const isPM = ampm.toLowerCase().startsWith('p');
@@ -87,9 +87,31 @@ interface ChatMessage {
   content: string;
 }
 
-interface ChatResponse {
-  messages: ChatMessage[];
-  results: unknown[];
+interface PineconeMetadata {
+  code: string;
+  title: string;
+  expandedDays?: string[];
+  days: string;
+  time: string;
+  building: string;
+  room: string;
+  instructor: string;
+  seatLimit: number;
+  description: string;
+  prerequisites?: string;
+  department: string;
+  units: string | number;
+  timeOfDay?: string;
+  timeStart?: number;
+  timeEnd?: number;
+}
+
+interface FilterConditions {
+  expandedDays?: { $in: string[] };
+  timeOfDay?: string;
+  timeStart?: { $gte: number };
+  timeEnd?: { $lte: number };
+  seatLimit?: { $gte: number } | { $lte: number };
 }
 
 export async function POST(req: Request) {
@@ -144,7 +166,7 @@ export async function POST(req: Request) {
     const queryEmbedding = response.data[0].embedding;
 
     // Build filter conditions
-    const filterConditions: any = {};
+    const filterConditions: FilterConditions = {};
     if (dayFilter) {
       filterConditions.expandedDays = { $in: [dayFilter] };
     }
@@ -175,7 +197,8 @@ export async function POST(req: Request) {
 
     // Format context with more detailed information
     const context = results.matches.map(match => {
-      const metadata = match.metadata as any;
+      // Use Record<string, any> to maintain exact same runtime behavior
+      const metadata = match.metadata as Record<string, any>;
       const score = match.score ? Math.round(match.score * 100) : 0;
       return `
 Course: ${metadata.code}: ${metadata.title}
