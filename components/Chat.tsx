@@ -6,16 +6,48 @@ import { Send } from 'lucide-react'
 export default function Chat() {
   const [messages, setMessages] = useState<Array<{ role: 'user' | 'assistant', content: string }>>([])
   const [input, setInput] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!input.trim()) return
+    if (!input.trim() || isLoading) return
 
-    // Add user message
-    setMessages(prev => [...prev, { role: 'user', content: input }])
-    setInput('')
+    try {
+      setIsLoading(true)
+      // Add user message
+      setMessages(prev => [...prev, { role: 'user', content: input }])
+      setInput('')
 
-    // TODO: Implement AI response logic here
+      // Call our API route
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query: input }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to get response');
+      }
+
+      // Add assistant's response
+      setMessages(prev => [...prev, { 
+        role: 'assistant', 
+        content: data.response 
+      }]);
+
+    } catch (error) {
+      console.error('Error:', error);
+      setMessages(prev => [...prev, { 
+        role: 'assistant', 
+        content: "I apologize, but I encountered an error while processing your request. Please try again."
+      }]);
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -56,10 +88,14 @@ export default function Chat() {
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask about courses..."
             className="flex-1 bg-gray-700/50 text-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            disabled={isLoading}
           />
           <button
             type="submit"
-            className="bg-blue-600 text-white rounded-lg px-4 py-2 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            disabled={isLoading}
+            className={`${
+              isLoading ? 'bg-blue-500/50' : 'bg-blue-600'
+            } text-white rounded-lg px-4 py-2 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500`}
           >
             <Send className="h-5 w-5" />
           </button>
