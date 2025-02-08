@@ -76,16 +76,6 @@ export default function Chat() {
     }
   }
 
-  // @ts-ignore
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('en-US', { 
-      hour: 'numeric', 
-      minute: '2-digit',
-      hour12: true 
-    })
-  }
-
   const parseCourseBlock = (block: string) => {
     const lines = block.split('\n').map(l => l.trim());
     const titleMatch = lines[0].match(/\*\*(.*?)\*\*/);
