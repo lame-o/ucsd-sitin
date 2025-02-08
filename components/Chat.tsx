@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { Send, Loader2, BotMessageSquare, CircleUserRound } from 'lucide-react'
+import { WordRotate } from './WordRotate'
 
 // Message type with optional metadata
 interface Message {
@@ -89,20 +90,26 @@ export default function Chat() {
           <h1 className="text-4xl font-bold text-white">AI Course Assistant</h1>
           <BotMessageSquare className="w-9 h-9 text-white translate-y-0.5" />
         </div>
-        <div className="text-gray-400">
-          <p className="text-sm">Try typing:</p>
-          <ul className="text-sm text-gray-500 mt-1">
-            <li>&quot;Show me biology classes that start at 1pm on Fridays&quot;</li>
-            <li>&quot;Find large psychology lectures that start in the afternoon&quot;</li>
-            <li>&quot;I'm interested in AI and machine learning&quot;</li>
-          </ul>
+        <div className="text-gray-400 flex items-center gap-2">
+          <p className="text-xl whitespace-nowrap font-semibold -translate-y-0.5">Try typing:</p>
+          <WordRotate
+            words={[
+              '"Show me biology classes that start at 1pm on Fridays"',
+              '"Find large psychology lectures that start in the afternoon"',
+              '"I am interested in AI and machine learning"',
+              '"I like design, what classes should I take?"',
+              '"What is the biggest music class?"',
+            ]}
+            className="text-lg font-medium text-white-700"
+          />
         </div>
       </div>
 
       <div className="bg-gray-800/50 backdrop-blur rounded-lg p-6 min-h-[600px] flex flex-col">
         <div className="flex-1 space-y-4 mb-4 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent">
           {messages.length === 0 ? (
-            <div className="text-gray-400 text-center py-4">
+            <div className="text-gray-400 text-center py-4 flex flex-col items-center gap-4">
+              <BotMessageSquare className="w-20 h-20 text-gray-500 opacity-50" />
               <p>Ask me about courses you might be interested in!</p>
             </div>
           ) : (
