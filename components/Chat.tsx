@@ -1,8 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { Send } from 'lucide-react'
-import { Loader2 } from 'lucide-react'
+import { Send, Loader2, BotMessageSquare, CircleUserRound } from 'lucide-react'
 
 // Message type with optional metadata
 interface Message {
@@ -84,25 +83,27 @@ export default function Chat() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-4">
-      <div className="flex justify-between items-center border-b border-gray-700 pb-4">
-        <div>
-          <h1 className="text-4xl font-bold text-white">Course Assistant</h1>
-          <p className="text-gray-400 mt-2">Ask me anything about UCSD courses!</p>
+    <div className="max-w-6xl mx-auto space-y-4">
+      <div className="flex flex-col space-y-4 border-b border-gray-700 pb-4">
+        <div className="flex items-center gap-3">
+          <h1 className="text-4xl font-bold text-white">AI Course Assistant</h1>
+          <BotMessageSquare className="w-9 h-9 text-white translate-y-0.5" />
+        </div>
+        <div className="text-gray-400">
+          <p className="text-sm">Try typing:</p>
+          <ul className="text-sm text-gray-500 mt-1">
+            <li>&quot;Show me biology classes that start at 1pm on Fridays&quot;</li>
+            <li>&quot;Find large psychology lectures that start in the afternoon&quot;</li>
+            <li>&quot;I'm interested in AI and machine learning&quot;</li>
+          </ul>
         </div>
       </div>
 
       <div className="bg-gray-800/50 backdrop-blur rounded-lg p-6 min-h-[600px] flex flex-col">
         <div className="flex-1 space-y-4 mb-4 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent">
           {messages.length === 0 ? (
-            <div className="text-gray-400 text-center py-8 space-y-2">
+            <div className="text-gray-400 text-center py-4">
               <p>Ask me about courses you might be interested in!</p>
-              <p className="text-sm">Try asking about:</p>
-              <ul className="text-sm text-gray-500">
-                <li>&quot;Show me computer science classes on Wednesday afternoons&quot;</li>
-                <li>&quot;What music classes are available in the morning?&quot;</li>
-                <li>&quot;Find large psychology lectures with available seats&quot;</li>
-              </ul>
             </div>
           ) : (
             messages.map((message, index) => (
@@ -120,11 +121,17 @@ export default function Chat() {
                   }`}
                 >
                   <div className="flex items-center gap-2 mb-1">
-                    <span className={`text-xs ${
-                      message.role === 'user' ? 'text-blue-300' : 'text-green-300'
-                    }`}>
-                      {message.role === 'user' ? 'You' : 'Assistant'}
-                    </span>
+                    {message.role === 'user' ? (
+                      <>
+                        <CircleUserRound className="w-5 h-5 text-yellow-300" />
+                        <span className="text-s text-yellow-300">You</span>
+                      </>
+                    ) : (
+                      <>
+                        <BotMessageSquare className="w-5 h-5 text-blue-300" />
+                        <span className="text-s text-blue-300">Assistant</span>
+                      </>
+                    )}
                     {message.timestamp && (
                       <span className="text-xs text-gray-500">
                         {formatTime(message.timestamp)}
@@ -153,15 +160,23 @@ export default function Chat() {
                               });
                             
                             return (
-                              <div key={blockIndex} className="bg-gray-800/50 rounded-lg p-4 mb-4 shadow-lg border border-gray-700">
-                                <h3 className="text-xl font-bold text-blue-400 mb-4">{title}</h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                  {details.map((detail, i) => (
-                                    <div key={i} className={`${detail.label === 'Description' || detail.label === 'Prerequisites' ? 'col-span-2' : ''}`}>
-                                      <span className="block text-blue-300 text-sm mb-1">{detail.label}</span>
-                                      <span className="block text-gray-200">{detail.value}</span>
-                                    </div>
-                                  ))}
+                              <div key={blockIndex} className="bg-gray-800/50 rounded-lg p-3 mb-3 shadow-lg border border-gray-700">
+                                <div className="flex justify-between items-center mb-2">
+                                  <h3 className="text-lg font-bold text-blue-400">{title}</h3>
+                                  <div className="flex items-center gap-3 text-xs text-gray-400">
+                                    <span>{details.find(d => d.label === 'Department')?.value}</span>
+                                    <span>{details.find(d => d.label === 'Units')?.value} Units</span>
+                                  </div>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                  {details
+                                    .filter(detail => !['Department', 'Units'].includes(detail.label))
+                                    .map((detail, i) => (
+                                      <div key={i} className={`${detail.label === 'Description' || detail.label === 'Prerequisites' ? 'col-span-2' : ''} ${detail.label === 'Description' ? 'mt-1' : ''}`}>
+                                        <span className="block text-blue-300/90 text-xs font-medium mb-0.5">{detail.label}</span>
+                                        <span className="block text-gray-200 text-sm leading-snug">{detail.value}</span>
+                                      </div>
+                                    ))}
                                 </div>
                               </div>
                             );
