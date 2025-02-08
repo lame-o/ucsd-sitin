@@ -86,7 +86,7 @@ export default function Home() {
       <Sidebar activeTab={activeTab} setActiveTab={handleTabClick} />
       <div className="flex-1 p-8">
         <div className="max-w-7xl mx-auto">
-          {(loading || isInitialLoad) && activeTab !== 'About' && activeTab !== 'Technical' && activeTab !== 'Chat' ? (
+          {(loading || isInitialLoad) && activeTab !== 'About' && activeTab !== 'Technical' && activeTab !== 'AI Assistant' ? (
             <div className="flex flex-col items-center justify-center h-64">
               <Loader />
               <div className="text-gray-400 mt-4">Getting Ready!</div>
@@ -254,7 +254,7 @@ export default function Home() {
                     </div>
                   </div>
                 </div>
-              ) : activeTab === "Chat" ? (
+              ) : activeTab === "AI Assistant" ? (
                 <Chat />
               ) : (
                 <LectureList 

@@ -9,7 +9,7 @@ import Image from 'next/image';
 const tabs = [
   { name: "Live Lectures", icon: Tv },
   { name: "Course Catalog", icon: Library },
-  { name: "Chat", icon: BotMessageSquare },
+  { name: "AI Assistant", icon: BotMessageSquare },
   { name: "About", icon: Info },
   { name: "Technical", icon: Cog },
 ]

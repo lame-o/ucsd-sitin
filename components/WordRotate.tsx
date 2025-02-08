@@ -21,7 +21,6 @@ export function WordRotate({
   useEffect(() => {
     const interval = setInterval(() => {
       if (elementRef.current) {
-        // Fade and slide out current text
         gsap.to(elementRef.current, {
           opacity: 0,
           y: 50,
@@ -29,7 +28,6 @@ export function WordRotate({
           ease: "power2.out",
           onComplete: () => {
             setIndex((prevIndex) => (prevIndex + 1) % words.length)
-            // Fade and slide in new text
             gsap.fromTo(elementRef.current!,
               { opacity: 0, y: -50 },
               { opacity: 1, y: 0, duration: 0.25, ease: "power2.out" }
@@ -44,9 +42,11 @@ export function WordRotate({
 
   return (
     <div className="overflow-hidden py-2">
-      <h1 ref={elementRef} className={cn(className)}>
-        {words[index]}
-      </h1>
+      <h1 
+        ref={elementRef} 
+        className={cn(className)}
+        dangerouslySetInnerHTML={{ __html: words[index] }}
+      />
     </div>
   )
 }
