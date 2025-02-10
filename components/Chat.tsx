@@ -211,7 +211,7 @@ export default function Chat() {
               <div className="shrink-0 mr-2">
                 <BotMessageSquare className="h-8 w-8 text-gray-400 animate-bounce" />
               </div>
-              <div className="relative rounded-lg px-4 py-2 bg-gray-700/50 text-gray-400 shadow-[0_4px_10px_rgba(0,0,0,0.5)] rounded-tl-none before:content-[''] before:absolute before:top-0 before:left-[-8px] before:border-8 before:border-transparent before:border-t-gray-700/50 before:border-r-gray-700/50">
+              <div className="relative rounded-lg px-4 py-2 bg-gray-700/50 text-gray-400 shadow-[0_4px_10px_rgba(0,0,0,0.5)]">
                 Thinking...
               </div>
             </div>
