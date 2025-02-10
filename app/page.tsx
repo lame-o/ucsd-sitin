@@ -162,9 +162,17 @@ export default function Home() {
                         <div className="bg-gray-700/50 rounded-lg p-4">
                           <h3 className="text-lg font-semibold text-blue-400 mb-2">Course Catalog Tab</h3>
                           <ul className="list-disc list-inside space-y-2 text-gray-300">
-                            <li>Browse all available lectures for the quarter</li>
-                            <li>Plan ahead for classes you want to check out</li>
-                            <li>Find course details and room information</li>
+                            <li>Browse and search through all available lectures</li>
+                            <li>View detailed course descriptions and prerequisites</li>
+                            <li>Filter by subject, days, and time slots</li>
+                          </ul>
+                        </div>
+                        <div className="bg-gray-700/50 rounded-lg p-4">
+                          <h3 className="text-lg font-semibold text-blue-400 mb-2">AI Course Assistant</h3>
+                          <ul className="list-disc list-inside space-y-2 text-gray-300">
+                            <li>Chat with our AI to get course recommendations</li>
+                            <li>Ask questions about course content and prerequisites</li>
+                            <li>Get help finding similar or related courses</li>
                           </ul>
                         </div>
                       </div>
