@@ -1,12 +1,13 @@
 'use client'
 
-import { useState, useEffect, createContext, useContext } from "react"
+import { useState, useEffect } from "react"
 import LectureList from "@/components/LectureList"
 import Sidebar from "@/components/Sidebar"
 import { fetchRecords } from "@/utils/airtable"
 import Image from 'next/image'
 import Loader from '@/components/Loader'
 import Chat from '@/components/Chat'
+import { ChatProvider } from "./contexts/ChatContext"
 
 interface ClassItem {
   id: string
@@ -22,29 +23,11 @@ interface ClassItem {
   meetingType: string
 }
 
-interface Message {
-  role: 'user' | 'assistant'
-  content: string
-  timestamp?: Date
-}
-
-// Create Chat Context
-const ChatContext = createContext<{
-  messages: Message[];
-  setMessages: (messages: Message[]) => void;
-}>({
-  messages: [],
-  setMessages: () => {},
-});
-
-export const useChatContext = () => useContext(ChatContext);
-
 export default function Home() {
   const [activeTab, setActiveTab] = useState("Live Lectures")
   const [classes, setClasses] = useState<ClassItem[]>([])
   const [loading, setLoading] = useState(true)
   const [isInitialLoad, setIsInitialLoad] = useState(true)
-  const [chatMessages, setChatMessages] = useState<Message[]>([])
 
   useEffect(() => {
     const fetchClassesData = async () => {
@@ -64,23 +47,19 @@ export default function Home() {
   }, [])
 
   const handleComponentReady = () => {
-    // Only handle loading state for initial load
     if (isInitialLoad) {
       setIsInitialLoad(false)
     }
   }
 
-  // Handle tab changes
   useEffect(() => {
     let timeoutId: NodeJS.Timeout
 
     const handleTabChange = async () => {
       setIsInitialLoad(true)
 
-      // Add a longer delay for tab changes
       timeoutId = setTimeout(() => {
         setIsInitialLoad(false)
-        // Keep loading for a bit after component is ready to ensure smooth transition
         setTimeout(() => {
         }, 300)
       }, 800)
@@ -96,11 +75,10 @@ export default function Home() {
   const handleTabClick = (tab: string) => {
     setIsInitialLoad(true)
     setActiveTab(tab)
-    
   }
 
   return (
-    <ChatContext.Provider value={{ messages: chatMessages, setMessages: setChatMessages }}>
+    <ChatProvider>
       <main className="flex min-h-screen bg-gray-900">
         <Sidebar activeTab={activeTab} setActiveTab={handleTabClick} />
         <div className="flex-1 p-8">
@@ -231,6 +209,10 @@ export default function Home() {
                       </div>
                     </div>
                   </div>
+                ) : activeTab === "Live Lectures" ? (
+                  <LectureList classes={classes} mode="live" onReady={handleComponentReady} />
+                ) : activeTab === "Course Catalog" ? (
+                  <LectureList classes={classes} mode="catalog" onReady={handleComponentReady} />
                 ) : activeTab === "Technical" ? (
                   <div className="max-w-5xl mx-auto space-y-8">
                     <div className="flex justify-between items-center border-b border-gray-700 pb-4">
@@ -283,18 +265,12 @@ export default function Home() {
                   </div>
                 ) : activeTab === "AI Assistant" ? (
                   <Chat />
-                ) : (
-                  <LectureList 
-                    classes={classes} 
-                    mode={activeTab === "Course Catalog" ? "catalog" : "live"}
-                    onReady={handleComponentReady}
-                  />
-                )}
+                ) : null}
               </>
             )}
           </div>
         </div>
       </main>
-    </ChatContext.Provider>
+    </ChatProvider>
   )
 }

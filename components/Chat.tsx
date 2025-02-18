@@ -5,7 +5,7 @@ import { Send, BotMessageSquare } from 'lucide-react'
 import { WordRotate } from './WordRotate'
 import Loader from './Loader'
 import { BuildingOffice2Icon, UserGroupIcon, UserIcon, ClockIcon } from '@heroicons/react/24/outline'
-import { useChatContext } from '@/app/page'
+import { useChatContext } from '@/app/contexts/ChatContext'
 
 export default function Chat() {
   const { messages, setMessages } = useChatContext()
