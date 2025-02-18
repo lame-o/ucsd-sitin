@@ -7,13 +7,6 @@ import Loader from './Loader'
 import { BuildingOffice2Icon, UserGroupIcon, UserIcon, ClockIcon } from '@heroicons/react/24/outline'
 import { useChatContext } from '@/app/page'
 
-// Message type with optional metadata
-interface Message {
-  role: 'user' | 'assistant'
-  content: string
-  timestamp?: Date
-}
-
 export default function Chat() {
   const { messages, setMessages } = useChatContext()
   const [input, setInput] = useState('')
