@@ -17,7 +17,9 @@ import {
   UserIcon,
   ArrowRightIcon,
   ArrowsUpDownIcon,
-  CalendarDaysIcon
+  CalendarDaysIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
 } from '@heroicons/react/24/outline';
 import { BoltIcon } from '@heroicons/react/24/solid';
 import Image from 'next/image';
@@ -70,6 +72,8 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
   const [selectedCatalogDay, setSelectedCatalogDay] = useState<string>('');
   const [sortByRecent, setSortByRecent] = useState(false);
   const [courseDescriptions, setCourseDescriptions] = useState<Record<string, CourseDescription>>({});
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 50; // Show 50 items per page
 
   // Extract all unique subjects and create subject descriptions
   const { groupedSubjects, subjectDescriptions } = useMemo(() => {
@@ -485,37 +489,45 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
   };
 
   // Memoized filtered catalog classes
-  const filteredCatalogClasses = useMemo(() => {
-    if (mode !== 'catalog') return [];
-    
-    const filtered = uniqueClasses.filter(c => {
-      if (selectedCatalogSubject && !c.courseCode.startsWith(selectedCatalogSubject)) return false;
-      if (selectedCatalogDay && !c.days.includes(selectedCatalogDay)) return false;
+  const catalogClasses = useMemo(() => {
+    const filtered = uniqueClasses.filter(classItem => {
+      if (selectedCatalogSubject && !classItem.courseCode.startsWith(selectedCatalogSubject)) return false;
+      if (selectedCatalogDay && !classItem.days.includes(selectedCatalogDay)) return false;
       return true;
+    }).sort((a, b) => {
+      // First sort by subject
+      const aSubject = a.courseCode.split(' ')[0];
+      const bSubject = b.courseCode.split(' ')[0];
+      if (aSubject !== bSubject) {
+        return aSubject.localeCompare(bSubject);
+      }
+      // Then sort by course number
+      const aNum = parseInt(a.courseCode.split(' ')[1]);
+      const bNum = parseInt(b.courseCode.split(' ')[1]);
+      return aNum - bNum;
     });
 
-    // If a specific day is selected, sort by number of days (ascending)
-    if (selectedCatalogDay) {
-      return filtered.sort((a, b) => {
-        // Count the number of days for each class
-        const daysA = a.days.match(/[A-Z][a-z]?/g)?.length || 0;
-        const daysB = b.days.match(/[A-Z][a-z]?/g)?.length || 0;
-        return daysA - daysB;
-      });
-    }
+    // Calculate pagination
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filtered.slice(startIndex, endIndex);
+  }, [uniqueClasses, selectedCatalogSubject, selectedCatalogDay, currentPage]);
 
-    // If no filters are applied, sort alphabetically by course code
-    if (!selectedCatalogSubject && !selectedCatalogDay) {
-      return filtered.sort((a, b) => {
-        // Extract the subject code (letters before the number)
-        const subjectA = a.courseCode.match(/^[A-Z]+/)?.[0] || '';
-        const subjectB = b.courseCode.match(/^[A-Z]+/)?.[0] || '';
-        return subjectA.localeCompare(subjectB);
-      });
-    }
+  // Calculate total pages
+  const totalFilteredClasses = useMemo(() => {
+    return uniqueClasses.filter(classItem => {
+      if (selectedCatalogSubject && !classItem.courseCode.startsWith(selectedCatalogSubject)) return false;
+      if (selectedCatalogDay && !classItem.days.includes(selectedCatalogDay)) return false;
+      return true;
+    }).length;
+  }, [uniqueClasses, selectedCatalogSubject, selectedCatalogDay]);
 
-    return filtered;
-  }, [mode, uniqueClasses, selectedCatalogSubject, selectedCatalogDay]);
+  const totalPages = Math.ceil(totalFilteredClasses / itemsPerPage);
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedCatalogSubject, selectedCatalogDay]);
 
   if (mode === 'catalog') {
     return (
@@ -603,22 +615,45 @@ export default function LectureList({ classes, mode = 'live', onReady }: Lecture
                   F
                 </button>
               </div>
-              <p className="text-gray-400">
-                There are <span className="text-white">{filteredCatalogClasses.length}</span> courses
-                {selectedCatalogSubject 
-                  ? ` in `
-                  : ` across `}
-                <span className="text-white">{selectedCatalogSubject || catalogSubjectsCount}</span> subjects{selectedCatalogDay && <> on <span className="text-white">{selectedCatalogDay === 'M' ? 'Monday' : selectedCatalogDay === 'Tu' ? 'Tuesday' : selectedCatalogDay === 'W' ? 'Wednesday' : selectedCatalogDay === 'Th' ? 'Thursday' : selectedCatalogDay === 'F' ? 'Friday' : selectedCatalogDay}</span></>}
-              </p>
+              <div className="flex items-center">
+                <p className="text-gray-400 translate-x-4">
+                  There are <span className="text-white">{totalFilteredClasses}</span> courses
+                  {selectedCatalogSubject 
+                    ? ` in `
+                    : ` across `}
+                  <span className="text-white">{selectedCatalogSubject || catalogSubjectsCount}</span> subjects{selectedCatalogDay && <> on <span className="text-white">{selectedCatalogDay === 'M' ? 'Monday' : selectedCatalogDay === 'Tu' ? 'Tuesday' : selectedCatalogDay === 'W' ? 'Wednesday' : selectedCatalogDay === 'Th' ? 'Thursday' : selectedCatalogDay === 'F' ? 'Friday' : selectedCatalogDay}</span></>}
+                </p>
+                {catalogClasses.length > 0 && (
+                  <div className={`flex items-center gap-2 ml-auto ${selectedCatalogDay ? 'translate-x-16' : 'translate-x-44'}`}>
+                    <button
+                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                      className={`p-2 rounded ${currentPage === 1 ? 'text-gray-600' : 'text-gray-400 hover:text-white hover:bg-gray-700'}`}
+                    >
+                      <ChevronLeftIcon className="w-6 h-6" />
+                    </button>
+                    <span className="text-gray-400 text-base">
+                      Page {currentPage} of {totalPages}
+                    </span>
+                    <button
+                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                      disabled={currentPage === totalPages}
+                      className={`p-2 rounded ${currentPage === totalPages ? 'text-gray-600' : 'text-gray-400 hover:text-white hover:bg-gray-700'}`}
+                    >
+                      <ChevronRightIcon className="w-6 h-6" />
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
         <div className="mt-4">
-          {filteredCatalogClasses.length > 0 ? (
-            <div className="bg-gray-800 rounded-lg overflow-hidden shadow-[0_0_12px_-2px_rgba(0,0,0,0.7)]">
+          {catalogClasses.length > 0 ? (
+            <div className="bg-gray-800 rounded-lg overflow-hidden shadow-[0_0_15px_-3px_rgba(0,0,0)] relative">
               {renderTableHeader('catalog')}
-              {filteredCatalogClasses.map((c, i) => 
-                renderClassRow(c, 'catalog', i === filteredCatalogClasses.length - 1)
+              {catalogClasses.map((c, i) => 
+                renderClassRow(c, 'catalog', i === catalogClasses.length - 1)
               )}
             </div>
           ) : (
