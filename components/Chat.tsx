@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useRef, useEffect, useState } from 'react'
 import { Send, BotMessageSquare } from 'lucide-react'
 import { WordRotate } from './WordRotate'
 import Loader from './Loader'
 import { BuildingOffice2Icon, UserGroupIcon, UserIcon, ClockIcon } from '@heroicons/react/24/outline'
+import { useChatContext } from '@/app/page'
 
 // Message type with optional metadata
 interface Message {
@@ -14,7 +15,7 @@ interface Message {
 }
 
 export default function Chat() {
-  const [messages, setMessages] = useState<Message[]>([])
+  const { messages, setMessages } = useChatContext()
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -32,14 +33,17 @@ export default function Chat() {
     e.preventDefault()
     if (!input.trim() || isLoading) return
 
+    // Create user message outside try block so it's accessible in catch block
+    const newUserMessage = { 
+      role: 'user' as const, 
+      content: input,
+      timestamp: new Date()
+    }
+
     try {
       setIsLoading(true)
       // Add user message with timestamp
-      setMessages(prev => [...prev, { 
-        role: 'user', 
-        content: input,
-        timestamp: new Date()
-      }])
+      setMessages([...messages, newUserMessage])
       setInput('')
 
       // Call our API route
@@ -58,19 +62,21 @@ export default function Chat() {
       }
 
       // Add assistant's response with timestamp
-      setMessages(prev => [...prev, { 
-        role: 'assistant', 
+      const newAssistantMessage = { 
+        role: 'assistant' as const, 
         content: data.response,
         timestamp: new Date()
-      }]);
+      }
+      setMessages([...messages, newUserMessage, newAssistantMessage]);
 
     } catch (error) {
       console.error('Error:', error);
-      setMessages(prev => [...prev, { 
-        role: 'assistant', 
+      const errorMessage = { 
+        role: 'assistant' as const, 
         content: "I apologize, but I encountered an error while processing your request. Please try again.",
         timestamp: new Date()
-      }]);
+      }
+      setMessages([...messages, newUserMessage, errorMessage]);
     } finally {
       setIsLoading(false)
     }
